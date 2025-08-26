@@ -2,6 +2,26 @@ const chat = document.getElementById("chat");
 const input = document.getElementById("answer");
 const btn = document.getElementById("sendBtn");
 let isSending = false;
+
+ const openBtn = document.getElementById("openLightbox");
+    const closeBtn = document.getElementById("closeLightbox");
+    const lightbox = document.getElementById("lightbox");
+
+    openBtn.addEventListener("click", () => {
+      lightbox.style.display = "flex"; // show lightbox
+    });
+
+    closeBtn.addEventListener("click", () => {
+      lightbox.style.display = "none"; // hide lightbox
+    });
+
+    // Also close if user clicks outside content
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) {
+        lightbox.style.display = "none";
+      }
+    });
+    
 // Add messages to chat
 function addMessage(sender, text) {
     const div = document.createElement("div");

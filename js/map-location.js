@@ -1,3 +1,22 @@
+ const openBtn = document.getElementById("openLightbox");
+    const closeBtn = document.getElementById("closeLightbox");
+    const lightbox = document.getElementById("lightbox");
+
+    openBtn.addEventListener("click", () => {
+      lightbox.style.display = "flex"; // show lightbox
+    });
+
+    closeBtn.addEventListener("click", () => {
+      lightbox.style.display = "none"; // hide lightbox
+    });
+
+    // Also close if user clicks outside content
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) {
+        lightbox.style.display = "none";
+      }
+    });
+
 // Initialize map centered between start and destination
 const map = L.map('map').setView([18.4035, -77.0265], 12);
 

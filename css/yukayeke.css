@@ -177,6 +177,13 @@ nav a.active::after {
     color: black;
 }
 
+    .social-icon {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
 /* General section styling */
 section {
   max-width: 1000px;

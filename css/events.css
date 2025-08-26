@@ -150,6 +150,65 @@ nav a.active::after {
     color: black;
 }
 
+/* Lightbox overlay */
+    .lightbox {
+      display: none; /* hidden by default */
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Lightbox content */
+    .lightbox-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 300px;
+      width: 80%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .lightbox-content a {
+      display: block;
+      margin: 15px 0;
+      text-decoration: none;
+      font-size: 18px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .lightbox-content a:hover {
+      color: #0077ff;
+    }
+
+    .close-btn {
+      margin-top: 20px;
+      padding: 8px 16px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      background: #555;
+    }
+
+    .social-icon {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
 .ticket-agent {
     background: rgba(0, 0, 0, 0.7);
     padding: 2rem;

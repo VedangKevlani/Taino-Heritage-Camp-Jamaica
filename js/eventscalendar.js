@@ -28,6 +28,25 @@ const msg = document.getElementById("admin-msg");
 
 const today = new Date();
 
+ const openBtn = document.getElementById("openLightbox");
+    const closeBtn = document.getElementById("closeLightbox");
+    const lightbox = document.getElementById("lightbox");
+
+    openBtn.addEventListener("click", () => {
+      lightbox.style.display = "flex"; // show lightbox
+    });
+
+    closeBtn.addEventListener("click", () => {
+      lightbox.style.display = "none"; // hide lightbox
+    });
+
+    // Also close if user clicks outside content
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) {
+        lightbox.style.display = "none";
+      }
+    });
+
 // Unified render function
 function renderEvents() {
   upcomingContainer.innerHTML = "";
