@@ -32,6 +32,7 @@ questions = [
 ]
 
 @app.route("/", methods=["GET"])
+def hello():
     return "Hello from Flask"
 
 # ----------------- Routes -----------------
@@ -140,7 +141,7 @@ def generate_ticket(answers):
 def email_ticket(receiver_email, pdf_file):
     port = 465
     smtp_server = "smtp.gmail.com"
-    sender_email = "vibranzmagazine@gmail.com"
+    sender_email = "tainoheritagecamp@gmail.com"
     password = os.environ.get("EMAIL_PASS")
 
     from email.message import EmailMessage
