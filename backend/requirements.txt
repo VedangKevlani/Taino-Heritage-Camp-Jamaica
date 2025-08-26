@@ -3,3 +3,5 @@ gunicorn
 python-dotenv
 Flask-Session
 Flask-Cors
+reportlab
+qrcode
