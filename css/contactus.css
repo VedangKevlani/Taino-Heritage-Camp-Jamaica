@@ -1,0 +1,243 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 0.8rem;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: url("../images/neon\ green.jpg") center/cover no-repeat fixed;
+    color: #e7e7e7;
+    min-height: 100vh;
+    line-height: 1.5;
+    backdrop-filter: blur(4px);    
+    overflow-x: hidden;
+}
+
+/* Background image */
+.image-gradient {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   opacity: 0.7;
+   z-index: -2; 
+}
+
+/* Soft blur overlay */
+.layer-blur {
+    height: 30rem;
+    width: 30rem;
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    box-shadow: 0 0 700px 200px rgba(128,0,192,0.4);
+    rotate: -30deg;
+    z-index: -1;
+}
+
+.container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    overflow: auto;
+}
+
+/* HEADER */
+header {
+    /* position: sticky;              */
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 2rem;
+    background: rgba(20, 20, 20, 0.4); 
+    /* backdrop-filter: blur(2px);     */
+    /* border-bottom: 1px solid rgba(255, 255, 255, 0.08); */
+}
+
+/* Logo / Title */
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: yellowgreen;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+header h1:hover {
+    transform: scale(1.05);
+}
+
+/* NAV LINKS */
+nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+nav a {
+    position: relative;
+    letter-spacing: 0.08rem;
+    text-decoration: none;
+    color: yellowgreen;
+    font-weight: 700;
+    font-size: 1.4rem;
+    padding: 0.3rem 0;  /* more click area */
+    transition: color 0.3s ease;
+}
+
+/* animated underline */
+nav a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: yellowgreen;
+    transition: width 0.3s ease;
+}
+
+nav a:hover {
+    color: yellowgreen;
+}
+
+nav a:hover::after {
+    width: 100%; /* underline grows smoothly */
+}
+
+/* ACTIVE PAGE STYLE */
+nav a.active {
+    color: yellowgreen;
+}
+
+nav a.active::after {
+    width: 100%;
+}
+
+/* SIGN UP BUTTON */
+.btn-signing {
+    background: linear-gradient(90deg, yellowgreen, green);
+    color: black;
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    border: none;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 12px rgba(173, 255, 47, 0.4);
+}
+
+.btn-signing:hover {
+    background: linear-gradient(90deg, green, yellowgreen);
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px rgba(173, 255, 47, 0.7);
+}
+
+
+.btn-signing:hover {
+    background-color: yellowgreen;
+    color: black;
+}
+
+/* Contact Page Styling */
+.contact-page {
+    max-width: 900px;
+    margin: 50px auto;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    padding: 30px;
+    background: #068116;
+    border-radius: 12px;
+    color: white;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-family: "Segoe UI", sans-serif;
+}
+
+.contact-page h2 {
+    text-align: center;
+    font-size: 2rem;
+    color: #cf9659;
+    margin-bottom: 15px;
+}
+
+.contact-details {
+    text-align: center;
+    margin-bottom: 25px;
+    line-height: 1.8;
+    font-size: 1.4rem;
+}
+
+.contact-details p {
+    font-size: 1.4rem;
+}
+
+.contact-details strong {
+    color: #2a5d3d;
+    font-size: 1.3rem;
+}
+
+.road-note {
+    background: #92250a;
+    color: #fffaeb;
+    border: 1px solid #ffeeba;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    margin: 20px 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form input, form textarea {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1.3rem;
+}
+
+form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+form button {
+    background-color: #cf9659;
+    color: #000000;
+    border: none;
+    padding: 12px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+form button:hover {      
+    background: #560685;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.map-reminder {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 1.4rem;
+    color: #ffffff;
+    font-style: italic;
+}

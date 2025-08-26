@@ -1,0 +1,297 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 1.1rem;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    /* background-color: black; */
+    background: url("../images/neon\ green.jpg") center/cover no-repeat fixed;
+    color: #e7e7e7;
+    min-height: 100vh;
+    line-height: 1.5;
+    backdrop-filter: blur(4px);    
+    overflow-x: hidden;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: calc(90vh - 6rem);
+    padding-left: 10%;
+}
+
+/* Background image */
+.image-gradient {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 50%;
+   object-fit: cover;
+   opacity: 0.7;
+   z-index: -2; 
+}
+
+/* Soft blur overlay */
+.layer-blur {
+    height: 30rem;
+    width: 30rem;
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    box-shadow: 0 0 700px 200px rgba(128,0,192,0.4);
+    rotate: -30deg;
+    z-index: -1;
+}
+
+.container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* HEADER */
+header {
+    /* position: sticky;              */
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 2rem;
+    /* background: rgba(20, 20, 20, 0.4); translucent background */
+    backdrop-filter: blur(2px);    
+    /* border-bottom: 1px solid rgba(255, 255, 255, 0.08); */
+}
+
+/* Logo / Title */
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: yellowgreen;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+header h1:hover {
+    transform: scale(1.05);
+}
+
+/* NAV LINKS */
+nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+nav a {
+    position: relative;
+    letter-spacing: 0.08rem;
+    text-decoration: none;
+    color: yellowgreen;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.3rem 0;  /* more click area */
+    transition: color 0.3s ease;
+}
+
+/* animated underline */
+nav a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: yellowgreen;
+    transition: width 0.3s ease;
+}
+
+nav a:hover {
+    color: yellowgreen;
+}
+
+nav a:hover::after {
+    width: 100%; /* underline grows smoothly */
+}
+
+/* ACTIVE PAGE STYLE */
+nav a.active {
+    color: yellowgreen;
+}
+
+nav a.active::after {
+    width: 100%;
+}
+
+/* SIGN UP BUTTON */
+.btn-signing {
+    background: linear-gradient(90deg, yellowgreen, green);
+    color: black;
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    border: none;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 12px rgba(173, 255, 47, 0.4);
+}
+
+.btn-signing:hover {
+    background: linear-gradient(90deg, green, yellowgreen);
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px rgba(173, 255, 47, 0.7);
+}
+
+
+.btn-signing:hover {
+    background-color: yellowgreen;
+    color: black;
+}
+
+/* EVENTS GRID */
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 10px;
+  margin: 2rem 0;
+}
+
+/* EVENT CARD */
+.event-card {
+  background: rgba(20, 20, 20, 0.85);
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(128, 0, 192, 0.3);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 0 30px rgba(173, 255, 47, 0.5);
+}
+
+.event-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 2px solid yellowgreen;
+}
+
+h2 {
+  font-size: 1.8rem;                      
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 800;
+  background-color:rgba(20, 20, 20, 0.85); 
+  border-radius: 10px;                      
+  color: yellowgreen;
+  text-transform: uppercase;               
+  letter-spacing: 1px;
+  margin: 2rem 0 1rem;                     /* spacing around */
+  padding: 0.3rem;
+  border-bottom: 2px solid rgb(124, 126, 9);    /* underline anchor */
+  text-shadow: 0 0 8px rgba(173, 255, 47, 0.6); 
+  width: fit-content;
+}
+
+
+/* TEXT INSIDE CARD */
+.event-info {
+  padding: 1.2rem;
+}
+
+.event-info h3 {
+  font-size: 1.4rem;
+  color: yellowgreen;
+  margin-bottom: 0.5rem;
+}
+
+.event-info .date {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+.event-info p {
+  font-size: 1rem;
+  color: #e7e7e7;
+  line-height: 1.4;
+  padding: 0.5rem 0;
+}
+
+/* create and delete events section styling */
+.event-admin {
+  margin: 3rem 0;
+  padding: 1.5rem;
+  background: rgba(30,30,30,0.9);
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0,255,0,0.3);
+}
+
+.event-admin h2 {
+  color: yellowgreen;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 8px rgba(173,255,47,0.6);
+}
+
+#admin-msg {
+  margin-top: 0.5rem;
+  color: lime;
+  font-weight: bold;
+}
+
+#admin-msg.error {
+  color: tomato;
+}
+
+.event-admin input {
+  margin: 0.5rem 0;
+  padding: 0.6rem 1rem;
+  width: 100%;
+  border-radius: 50px;
+  border: 1px solid #444;
+  background: black;
+  color: white;
+  font-size: 1rem;
+}
+
+.event-admin button.btn-create {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  background: yellowgreen;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.event-admin button.btn-create:hover {
+  background: green;
+  color: white;
+}
+
+.btn-delete {
+  background: crimson;
+  color: white;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}

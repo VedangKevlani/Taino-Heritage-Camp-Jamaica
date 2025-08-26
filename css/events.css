@@ -1,0 +1,379 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 0.8rem;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: url("../images/neon\ green.jpg") center/cover no-repeat fixed;
+    color: #e7e7e7;
+    min-height: 100vh;
+    line-height: 1.5;
+    backdrop-filter: blur(4px);    
+    overflow-x: hidden;
+}
+
+/* Background image */
+.image-gradient {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   opacity: 0.7;
+   z-index: -2; 
+}
+
+/* Soft blur overlay */
+.layer-blur {
+    height: 30rem;
+    width: 30rem;
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    box-shadow: 0 0 700px 200px rgba(128,0,192,0.4);
+    rotate: -30deg;
+    z-index: -1;
+}
+
+.container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    overflow: auto;
+}
+
+/* HEADER */
+header {
+    /* position: sticky;              */
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 2rem;
+    background: rgba(20, 20, 20, 0.4); 
+    /* backdrop-filter: blur(2px);     */
+    /* border-bottom: 1px solid rgba(255, 255, 255, 0.08); */
+}
+
+/* Logo / Title */
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: yellowgreen;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+header h1:hover {
+    transform: scale(1.05);
+}
+
+/* NAV LINKS */
+nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+nav a {
+    position: relative;
+    letter-spacing: 0.08rem;
+    text-decoration: none;
+    color: yellowgreen;
+    font-weight: 700;
+    font-size: 1.4rem;
+    padding: 0.3rem 0;  /* more click area */
+    transition: color 0.3s ease;
+}
+
+/* animated underline */
+nav a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: yellowgreen;
+    transition: width 0.3s ease;
+}
+
+nav a:hover {
+    color: yellowgreen;
+}
+
+nav a:hover::after {
+    width: 100%; /* underline grows smoothly */
+}
+
+/* ACTIVE PAGE STYLE */
+nav a.active {
+    color: yellowgreen;
+}
+
+nav a.active::after {
+    width: 100%;
+}
+
+/* SIGN UP BUTTON */
+.btn-signing {
+    background: linear-gradient(90deg, yellowgreen, green);
+    color: black;
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    border: none;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 12px rgba(173, 255, 47, 0.4);
+}
+
+.btn-signing:hover {
+    background: linear-gradient(90deg, green, yellowgreen);
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px rgba(173, 255, 47, 0.7);
+}
+
+
+.btn-signing:hover {
+    background-color: yellowgreen;
+    color: black;
+}
+
+.ticket-agent {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2rem;
+    border-radius: 20px;
+    max-width: 700px;
+    margin: 3rem auto;
+    box-shadow: 0 0 40px rgba(25, 129, 4, 0.5);
+    text-align: center;
+}
+
+.ticket-agent h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: yellowgreen;
+    text-shadow: 0 0 15px rgba(128, 128, 128, 0.5);
+}
+
+
+/* Fade-in animation */
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+#chat {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 1rem;
+    color: white;
+    height: 250px;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    font-size: 1.2rem;
+    line-height: 1.5;
+}
+
+/* Input + Button wrapper */
+.chat-input {
+    display: flex;
+    justify-content: left;
+    gap: 1rem;
+}
+
+/* Textbox styling */
+.chat-input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    width: 100%;
+    border-radius: 50px;
+    border: 1px solid #444;
+    font-size: 1.2rem;
+    background: black;
+    color: white;
+    outline: none;
+    transition: border 0.2s ease;
+}
+
+#answer {
+  flex: 1;
+    padding: 0.8rem 1rem;
+    width: 85%;
+    border-radius: 40px;
+    border: 1px solid #444;
+    font-size: 1.3rem;
+    background: black;
+    color: white;
+    outline: none;
+    transition: border 0.2s ease;
+}
+
+.chat-input input:focus {
+    border: 1px solid yellowgreen;
+}
+
+/* Send button */
+.chat-input, #sendBtn {
+    background-color: yellowgreen;
+    color: black;
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    border: none;
+    font-size: 1rem;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#sendBtn:hover {
+  font-size: 1.2rem;
+  font-weight: 600;
+  background-color: limegreen;
+  color: black;
+  transform: scale(1.05);
+}
+
+.chat-input button:hover {
+    background-color: grey;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Hero */
+.hero {
+  background: url("taino\ game1.jpg") center/cover no-repeat;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+.hero-text {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+.hero-text h2 {
+  font-size: 36px;
+  margin: 0;
+}
+.hero-text p {
+  font-size: 18px;
+}
+
+/* Sections */
+.events-section, .past-events {
+  max-width: 1100px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+.events-section h3, .past-events h3 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+/* Upcoming Event Cards */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.event-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+.event-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+.event-info {
+  padding: 15px;
+}
+.event-info h4 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+.event-info p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #666;
+}
+.event-info span {
+  display: block;
+  font-size: 13px;
+  color: #999;
+}
+.event-info button {
+  margin-top: 10px;
+  background: #f5a623;
+  border: none;
+  padding: 8px 14px;
+  color: white;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.event-info button:hover {
+  background: #d48806;
+}
+
+/* Past Events Gallery */
+.past-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+.past-grid img {
+  width: 100%;
+  border-radius: 10px;
+  transition: transform 0.3s;
+}
+.past-grid img:hover {
+  transform: scale(1.05);
+}
+
+/* Footer */
+.footer {
+  background: #2c2c2c;
+  color: #ccc;
+  text-align: center;
+  padding: 20px;
+  margin-top: 50px;
+}
+.footer p {
+  margin: 5px 0;
+}
+

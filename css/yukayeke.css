@@ -1,0 +1,409 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 0.8rem;
+}
+
+body {
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;   
+    background: url("../images/neon\ green.jpg") center/cover no-repeat fixed;
+    color: #e7e7e7;
+    min-height: 100vh;
+    line-height: 1.5;
+    backdrop-filter: blur(4px);    
+    overflow-x: hidden;
+}
+
+.what-to-expect {
+    background: rgb(44, 134, 8); /* semi-transparent dark background */
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(0, 128, 0, 0.3);
+    margin: 3rem 0;
+    color: #f0f0f0;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;   
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: 3s ease;
+}
+
+.what-to-expect ul,li {
+    list-style: square;
+    font-size: 1.3rem;
+    padding: 5px;
+}
+
+.what-to-expect h2, h3 {
+    font-size: 2rem;
+    color: #7CFC00; /* light green highlight */
+    margin-bottom: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Hero image with gradient overlay */
+.image-gradient {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+    position: relative;
+    border-bottom: 5px solid #5a3e1b; /* earthy divider */
+}
+
+/* Soft blur overlay */
+.layer-blur {
+    height: 30rem;
+    width: 30rem;
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    box-shadow: 0 0 700px 200px rgba(128,0,192,0.4);
+    rotate: -30deg;
+    z-index: -1;
+}
+
+.container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* HEADER */
+header {
+    /* position: sticky; */
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 2rem;
+    /* background: rgba(20, 20, 20, 0.4); translucent background */
+    /* backdrop-filter: blur(2px);     */
+    /* border-bottom: 1px solid rgba(255, 255, 255, 0.08); */
+}
+
+/* Logo / Title */
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: yellowgreen;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+header h1:hover {
+    transform: scale(1.05);
+}
+
+/* NAV LINKS */
+nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+nav a {
+    position: relative;
+    letter-spacing: 0.08rem;
+    text-decoration: none;
+    color: yellowgreen;
+    font-weight: 600;
+    font-size: 1.4rem;
+    padding: 0.3rem 0;  /* more click area */
+    transition: color 0.3s ease;
+}
+
+/* animated underline */
+nav a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: yellowgreen;
+    transition: width 0.3s ease;
+}
+
+nav a:hover {
+    color: yellowgreen;
+}
+
+nav a:hover::after {
+    width: 100%; /* underline grows smoothly */
+}
+
+/* ACTIVE PAGE STYLE */
+nav a.active {
+    color: yellowgreen;
+}
+
+nav a.active::after {
+    width: 100%;
+}
+
+/* SIGN UP BUTTON */
+.btn-signing {
+    background: linear-gradient(90deg, yellowgreen, green);
+    color: rgb(4, 82, 82);
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    border: none;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 12px rgba(173, 255, 47, 0.4);
+}
+
+.btn-signing:hover {
+    background: linear-gradient(90deg, green, yellowgreen);
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px rgba(173, 255, 47, 0.7);
+}
+
+
+.btn-signing:hover {
+    background-color: yellowgreen;
+    color: black;
+}
+
+/* General section styling */
+section {
+  max-width: 1000px;
+  margin: 3rem auto;
+  padding: 2rem;
+  font-size: 1.3rem;
+  border-radius: 12px;
+background: linear-gradient(rgba(19, 172, 14, 0.9), rgba(4, 139, 45, 0.9)),
+              url("../images/hero-background.jpg") center/cover no-repeat;  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* Section Titles */
+section h2 {
+    font-size: 2rem;
+    color: #7CFC00; /* light green highlight */
+    margin-bottom: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Paragraphs */
+section p {
+  line-height: 1.8;
+  color: #ffffff;
+  margin-bottom: 1.2rem;
+  font-size: 1.3rem;
+}
+
+/* Page Hero Section */
+.page-hero {
+  text-align: center;
+  background: linear-gradient(rgba(19, 172, 14, 0.9), rgba(4, 139, 45, 0.9)),
+              url("../images/hero-background.jpg") center/cover no-repeat;
+}
+
+.page-hero h2 {
+    font-size: 2rem;
+    color: #7CFC00; /* light green highlight */
+    margin-bottom: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.page-hero p {
+  max-width: 800px;
+  margin: 1rem auto;
+  font-size: 1.3rem;
+}
+
+/* Heritage + Workshops lists */
+.workshops ul {
+  list-style: disc;
+  padding-left: 2rem;
+  color: #ffffff;
+  margin-top: 1rem;
+  font-size: 1.3rem;
+}
+
+.workshops li {
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+/* Team section */
+.team-gallery {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.team-gallery img {
+  max-width: 80%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  margin-bottom: 1rem;
+}
+
+.team-gallery p {
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #fffefe;
+}
+
+/* Collaborators logos */
+.collab-logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.collab-logos img {
+  height: 80px;
+  object-fit: contain;
+  filter: grayscale(30%);
+  transition: transform 0.3s, filter 0.3s;
+}
+
+.collab-logos img:hover {
+  transform: scale(1.1);
+  filter: grayscale(0%);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  section {
+    padding: 1.5rem;
+  }
+
+  .page-hero h2 {
+    font-size: 2rem;
+  }
+
+  .collab-logos img {
+    height: 60px;
+  }
+}
+
+/* Main container for content */
+.yukayeke-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+    line-height: 1.8;
+    color: #333;
+}
+
+/* Section titles */
+.yukayeke-container h2 {
+    font-size: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #5a3e1b; /* earthy brown */
+    text-transform: uppercase;
+    border-left: 5px solid #d9a441;
+    padding-left: 10px;
+}
+
+/* Paragraph text */
+.yukayeke-container p {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+/* Team section */
+.team-section {
+    margin-top: 2rem;
+    background: #faf6f0;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+.team-section h3 {
+    margin-bottom: 1rem;
+    font-size: 1.6rem;
+    color: #444;
+}
+
+/* Team images */
+.team-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.team-images img {
+    width: 250px;
+    border-radius: 8px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.team-images img:hover {
+    transform: scale(1.05);
+}
+
+/* Collaborators section */
+.collaborators {
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.collaborators h3 {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    color: #444;
+}
+
+/* Collaborator logos */
+.collaborator-logos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.collaborator-logos img {
+    height: 70px;
+    object-fit: contain;
+    filter: grayscale(50%);
+    transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.collaborator-logos img:hover {
+    filter: grayscale(0%);
+    transform: scale(1.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .yukayeke-container {
+        padding: 1rem;
+    }
+
+    .team-images img {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .collaborator-logos img {
+        height: 50px;
+    }
+}

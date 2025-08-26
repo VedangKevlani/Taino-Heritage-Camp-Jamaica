@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Taino Heritage Camp Events</title>
+  <link rel="stylesheet" href="../css/eventscalendar.css">
+</head>
+<body>
+  <header>
+    <h1 class="logo">
+    <a href="./index.html"><img src="../images/Taino_Heritage_Camps.png" alt="Taino Heritage Camp Logo" class="logo-image"></a>
+    </h1>
+    <nav>
+        <a href="./events.html">Book A Visit</a>
+        <a href="#">View Events Calendar</a>
+        <a href="./our-location.html">Our Location</a>
+        <a href="./contactus.html">Contact Us</a>
+    </nav>
+    <button class="btn-signing">Socials</button>
+  </header>
+
+<main>
+    <section>
+      <h2>Upcoming Events</h2>
+      <div id="upcoming-events" class="event-grid"></div>
+    </section>
+
+    <section>
+      <h2>Past Events</h2>
+      <div id="past-events" class="event-grid"></div>
+    </section>
+  </main>
+
+<section class="event-admin">
+  <h2>Manage Events</h2>
+
+  <form id="create-event-form">
+    <input type="text" id="event-title" placeholder="Event Title" required>
+    <input type="date" id="event-date" required>
+    <input type="text" id="event-description" placeholder="Description" required>
+    <input type="file" id="event-image-file" accept="image/*" required>
+    <button type="submit" class="btn-create">Add Event</button>
+  </form>
+
+  <p id="admin-msg"></p>
+</section>
+
+  <script src="../js/eventscalendar.js"></script>
+<footer>
+    <p>&copy; 2025 Taino Heritage Camp. All Rights Reserved.</p>
+</footer>
+</body>
+</html>
