@@ -31,6 +31,9 @@ questions = [
     "What is your email address? Once you enter a valid email, a ticket will be sent."
 ]
 
+@app.route("/", methods=["GET"])
+    return "Hello from Flask"
+
 # ----------------- Routes -----------------
 @app.route("/reset", methods=["POST"])
 def reset_session():
