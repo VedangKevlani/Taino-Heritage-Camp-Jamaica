@@ -86,6 +86,47 @@ def answer():
     if not user_answer:
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
+    # Get current step and answers from session
+    step = session.get("step", 0)
+    answers = session.get("answers", [])
+
+    # Store the user's answer
+    answers.append(user_answer)
+    session["answers"] = answers
+
+    # Debug echo before increment
+    debug_msg = f"(debug) step={step}, received='{user_answer}'"
+
+    # Increment step for the next question
+    step += 1
+    session["step"] = step
+
+    # Check if finished
+    if step >= len(questions):
+        try:
+            pdf_filename = generate_ticket(answers)
+            email_ticket(answers[-1], pdf_filename)
+        except Exception as e:
+            print(f"Error generating/emailing ticket: {e}")
+            session.clear()
+            return jsonify({"question": f"{debug_msg} | An error occurred while generating your ticket.", "done": True})
+
+        session.clear()
+        return jsonify({"question": f"{debug_msg} | All done! Your ticket has been sent.", "done": True})
+
+    # Return next question with debug info
+    return jsonify({
+        "question": f"{debug_msg} | (step {step}) {questions[step]}",
+        "done": False,
+        "step": step,
+        "answers": answers
+    })
+
+    data = request.get_json()
+    user_answer = data.get("answer", "").strip()
+    if not user_answer:
+        return jsonify({"question": "Please provide a valid answer.", "done": False})
+
     # pull from session
     step = session.get("step", 0)
     answers = session.get("answers", [])
