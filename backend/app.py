@@ -49,7 +49,7 @@ def ask():
         return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
 
     return jsonify({
-        "question": f"(step {step}) {questions[step]}",
+        "question": questions[step],
         "done": False,
         "step": step,
         "answers": answers
@@ -62,36 +62,31 @@ def answer():
     if not user_answer:
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
+    # Pull session
     step = session.get("step", 0)
     answers = session.get("answers", [])
-    
+
+    # Append answer only once
     if len(answers) == step:
         answers.append(user_answer)
         session["answers"] = answers
 
     step += 1
     session["step"] = step
-    print(step)
-    if step >= len(questions):
-        try:
-            pdf_filename = generate_ticket(answers)
-            email_ticket(answers[-1], pdf_filename)
-        except Exception as e:
-            print(f"Error generating/emailing ticket: {e}")
-            session.clear()
-            return jsonify({"question": "An error occurred while generating your ticket.", "done": True})
 
+    if step >= len(questions):
         session.clear()
         return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
 
     return jsonify({
-        "question": f"(step {step}) {questions[step]}",
+        "question": questions[step],
         "done": False,
         "step": step,
         "answers": answers
     })
 
-@app.route("/debug", methods=["GET"])
+# Debug endpoint
+@app.route("/debug")
 def debug():
     return jsonify({
         "step": session.get("step", 0),
