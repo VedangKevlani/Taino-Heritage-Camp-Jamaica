@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, session
+import redis
 from flask_session import Session
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -79,7 +80,7 @@ def answer():
 
 # ----------------- Helper Functions -----------------
 def generate_ticket(answers):
-    safe_name = answers[1].replace(" ", "_")
+    safe_name = answers[0].replace(" ", "_")  # use first answer as name
     filename = f"Taino_HCGuest_Ticket_{safe_name}.pdf"
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
@@ -97,13 +98,13 @@ def generate_ticket(answers):
     c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 14)
     labels = [
-        ("Name", answers[1]),
-        ("Tickets", answers[2]),
-        ("Group", answers[3]),
-        ("Phone", answers[4]),
-        ("Package", answers[5]),
-        ("Date", answers[6]),
-        ("Email", answers[7]),
+        ("Name", answers[0]),
+        ("Tickets", answers[1]),
+        ("Group", answers[2]),
+        ("Phone", answers[3]),
+        ("Package", answers[4]),
+        ("Date", answers[5]),
+        ("Email", answers[6]),
     ]
     y = height-120
     for label, value in labels:
@@ -111,7 +112,7 @@ def generate_ticket(answers):
         y -= 40
 
     # QR Code
-    qr_data = f"Name: {answers[1]} | Tickets: {answers[2]} | Date: {answers[6]}"
+    qr_data = f"Name: {answers[0]} | Tickets: {answers[1]} | Date: {answers[5]}"
     qr = qrcode.make(qr_data)
     qr_file = f"{safe_name}_qr.png"
     qr.save(qr_file)

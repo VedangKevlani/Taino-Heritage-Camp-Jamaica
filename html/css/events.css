@@ -296,6 +296,23 @@ nav a.active::after {
   border-radius: 6px;
 }
 
+.agent-msg {
+  background-color: #f1f1f1;
+  color: black;
+  align-self: flex-start;
+}
+
+.user-msg {
+  background: #d1f7d6;
+  align-self: flex-end;
+}
+
+#chat {
+  display: flex;
+  flex-direction: column;
+}
+
+
 /* Send button */
 .chat-input, #sendBtn {
     background-color: yellowgreen;
