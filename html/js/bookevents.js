@@ -34,6 +34,10 @@ function addMessage(sender, text, clearPrevious=false) {
 
 
 async function sendAnswer(answer) {
+    if (isSending) return; // prevent double send
+    isSending = true;
+    input.disabled = true;
+
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/answer", {
             method: "POST",
@@ -43,24 +47,20 @@ async function sendAnswer(answer) {
         });
         const data = await res.json();
 
-        // Wait 2 seconds before showing next agent message
-        await new Promise(r => setTimeout(r, 2000));
         addMessage("agent", data.question);
-
         if (!data.done) {
             input.disabled = false;
             input.focus();
-        } else {
-            input.disabled = true; // session done
         }
     } catch (err) {
         addMessage("agent", "Error: Could not reach server.");
         console.error(err);
         input.disabled = false;
     } finally {
-        isSending = false; // ✅ allow next answer
+        isSending = false;
     }
 }
+
 
 input.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
@@ -87,15 +87,12 @@ async function loadQuestion() {
 btn.addEventListener("click", (e) => {
     e.preventDefault();
     const answer = input.value.trim();
-    if (!answer || isSending) return; // ✅ prevent double sends
-    isSending = true;                   // mark as sending
-
+    if (!answer || isSending) return; // prevent double submit
     addMessage("user", answer);
     input.value = "";
-    input.disabled = true;
-
     sendAnswer(answer);
 });
+
 
 document.addEventListener("DOMContentLoaded", () => {
     loadQuestion();
