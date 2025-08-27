@@ -57,26 +57,26 @@ def ask():
     if request.method == "POST":
         user_answer = request.json.get("answer")
 
-        # only move forward if this answer is new
+        # move forward only if new
         if user_answer and (len(answers) == step):
             answers.append(user_answer)
             session["answers"] = answers
 
-            step += 1  # go to next step
+            step += 1
             session["step"] = step
 
-    # safety: prevent looping
+    # prevent loop
     if step >= len(questions):
         return jsonify({
-            "message": f"Thanks {answers[0]}, you booked {answers[1]} ticket(s). Confirmation sent to {answers[2]}.",
+            "message": f"(step {step}) Thanks {answers[0]}, you booked {answers[1]} ticket(s). Confirmation sent to {answers[2]}.",
             "done": True
         })
 
     return jsonify({
-        "question": questions[step],
+        "question": f"(step {step}) {questions[step]}",   # <-- add step index here
         "done": False,
-        "step": step,              # 🔍 extra debug info
-        "answers": answers         # 🔍 extra debug info
+        "step": step,
+        "answers": answers
     })
 
 @app.route("/answer", methods=["POST"])
