@@ -12,14 +12,12 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "sUp3Rs3cr3tK3y"
-app.config["SESSION_TYPE"] = "filesystem"
-# Use Redis for sessions
 # Use Redis for session storage
-app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "chat:"
-app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
+# app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
 Session(app)
 
 # ✅ Proper CORS for Netlify frontend
@@ -160,4 +158,5 @@ def email_ticket(receiver_email, pdf_file):
         return False
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True, use_reloader=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
