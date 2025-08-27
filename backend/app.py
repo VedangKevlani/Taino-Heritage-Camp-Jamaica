@@ -25,6 +25,11 @@ CORS(app, supports_credentials=True, origins=[
     "https://tainoheritagecamp.netlify.app"
 ])
 
+
+@app.route("/", methods=["GET"])
+def test():
+    return "This is working sir"
+    
 @app.route("/reset", methods=["POST"])
 def reset_session():
     session.clear()
