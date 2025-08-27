@@ -21,75 +21,58 @@ lightbox.addEventListener("click", (e) => {
   }
 });
 
-// Add messages to chat
 function addMessage(sender, text) {
     const div = document.createElement("div");
     div.className = sender === "agent" ? "agent-msg" : "user-msg";
-    div.textContent = sender === "agent" ? "Agent: " + text : "You: " + text;
+    div.textContent = (sender === "agent" ? "Agent: " : "You: ") + text;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-    return div; // Return the message div for manipulation
 }
 
-// Send answer to backend
-async function sendAnswer() {
-    const answer = input.value.trim();
-    if (!answer) return;
 
-    addMessage("user", answer);
-    input.value = "";
-    input.disabled = true;
-    btn.disabled = true;
-
+async function sendAnswer(answer) {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/answer", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ answer })
         });
         const data = await res.json();
-
-        // Show "Agent is typing..." message
-        const typingDiv = addMessage("agent", "Agent is typing...");
-
-        // Wait 2 seconds
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Replace typing message with actual agent response
-        typingDiv.textContent = "Agent: " + data.question;
-
-        if (!data.done) {
-            input.disabled = false;
-            btn.disabled = false;
-            input.focus();
-        }
+        await new Promise(r => setTimeout(r, 2000));
+        addMessage("agent", data.question);
+        if (!data.done) input.disabled = false;
     } catch (err) {
         addMessage("agent", "Error: Could not reach server.");
+        console.error(err);
         input.disabled = false;
-        btn.disabled = false;
     }
 }
 
-// Load first question
 async function loadQuestion() {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/ask");
         const data = await res.json();
+        // 2 sec delay before displaying
+        await new Promise(r => setTimeout(r, 2000));
         addMessage("agent", data.question);
     } catch (err) {
-        console.error("Error fetching first question:", err);
+        addMessage("agent", "Error: Could not reach server.");
+        console.error(err);
     }
 }
 
-// Event listeners
-btn.addEventListener("click", (e) => { e.preventDefault(); sendAnswer(); });
-let enterPressed = false;
-input.addEventListener("keypress", (e) => {
-  if (e.key === "Enter" && !enterPressed) {
-    enterPressed = true;
+btn.addEventListener("click", (e) => {
     e.preventDefault();
-    sendAnswer().finally(() => { enterPressed = false; });
-  }
+    const answer = input.value.trim();
+    if (!answer) return;
+    addMessage("user", answer);
+    input.value = "";
+    input.disabled = true;
+    sendAnswer(answer);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadQuestion();
 });
 
 // PDF generation (calls backend /answer route for now)
@@ -104,5 +87,3 @@ function generatePDF(ticketData) {
   .catch(err => console.error("Error generating PDF:", err));
 }
 
-// Initialize chat
-loadQuestion();
