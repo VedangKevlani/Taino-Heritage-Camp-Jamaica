@@ -1,35 +1,32 @@
 from flask import Flask, request, jsonify, session
 from flask_session import Session
-import uuid
+from flask_cors import CORS
+import tempfile
+import uuid, os, smtplib, ssl
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-import qrcode, smtplib, ssl, os
-from flask_cors import CORS
 from dotenv import load_dotenv
-import redis
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersecretkey")
+app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
-# ----------------- SESSION CONFIG -----------------
-# Use Redis to persist sessions across multiple Render workers
-app.config["SESSION_TYPE"] = "redis"
+# ---------------- Session Configuration ----------------
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "chat:"
-app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
-
 Session(app)
 
-# ----------------- CORS -----------------
+# ---------------- CORS ----------------
 CORS(app, supports_credentials=True, origins=[
     "https://tainoheritagecamp.netlify.app"
 ])
 
-# ----------------- QUESTIONS -----------------
+# ---------------- Questions ----------------
 questions = [
     "Welcome guest! What is your full name?",
     "How many tickets are you purchasing?",
@@ -40,7 +37,7 @@ questions = [
     "What is your email address? Once you enter a valid email, a ticket will be sent."
 ]
 
-# ----------------- DEBUG LOG -----------------
+# ---------------- In-Memory Debug Log ----------------
 DEBUG_LOGS = []
 
 def add_debug_log(msg):
@@ -48,7 +45,7 @@ def add_debug_log(msg):
     if len(DEBUG_LOGS) > 50:
         DEBUG_LOGS.pop(0)
 
-# ----------------- ROUTES -----------------
+# ---------------- Routes ----------------
 @app.route("/", methods=["GET"])
 def test():
     return "This is working sir"
@@ -56,19 +53,23 @@ def test():
 @app.route("/reset", methods=["POST"])
 def reset_session():
     session.clear()
-    add_debug_log("Session cleared")
+    add_debug_log("Session reset")
     return jsonify({"status": "ok"})
 
 @app.route("/ask", methods=["GET"])
 def ask():
-    step = session.get("step", 0)
-    answers = session.get("answers", [])
+    if "step" not in session:
+        session["step"] = 0
+        session["answers"] = []
+        add_debug_log("Initialized session keys")
 
-    add_debug_log(f"Asking question {step}: {questions[step] if step < len(questions) else 'All done'}")
+    step = session["step"]
+    answers = session["answers"]
 
     if step >= len(questions):
         return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
 
+    add_debug_log(f"Asking question {step}: {questions[step]}")
     return jsonify({
         "question": questions[step],
         "done": False,
@@ -78,24 +79,21 @@ def ask():
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    data = request.get_json()
+    data = request.get_json() or {}
     user_answer = data.get("answer", "").strip()
+
     if not user_answer:
-        add_debug_log("Received empty answer")
+        add_debug_log("Empty answer received")
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
     step = session.get("step", 0)
     answers = session.get("answers", [])
 
-    # Append answer if not already recorded
     if len(answers) == step:
         answers.append(user_answer)
         session["answers"] = answers
         add_debug_log(f"Answer recorded for step {step}: {user_answer}")
-    else:
-        add_debug_log(f"Step mismatch: session step={step}, answers length={len(answers)}")
 
-    # Increment step
     step += 1
     session["step"] = step
 
@@ -112,21 +110,16 @@ def answer():
         "answers": answers
     })
 
-@app.route("/debug", methods=["GET", "POST"])
+@app.route("/debug", methods=["GET"])
 def debug():
-    step = session.get("step", 0)
-    answers = session.get("answers", [])
-    incoming = request.get_json() or {}
     debug_info = {
-        "step_in_session": step,
-        "answers_in_session": answers,
-        "incoming_post_data": incoming,
-        "debug_logs": DEBUG_LOGS
+        "step_in_session": session.get("step", 0),
+        "answers_in_session": session.get("answers", []),
+        "debug_logs": DEBUG_LOGS[-20:]  # last 20 logs
     }
-    add_debug_log(f"Debug accessed: {debug_info}")
     return jsonify(debug_info)
 
-# ----------------- HELPER FUNCTIONS -----------------
+# ---------------- Helper Functions ----------------
 def generate_ticket(answers):
     pdf_filename = f"ticket_{uuid.uuid4().hex}.pdf"
     qa_map = {q: a for q, a in zip(questions, answers)}
@@ -138,9 +131,9 @@ def generate_ticket(answers):
     story.append(Paragraph("Taino Heritage Camp Ticket", styles['Title']))
     story.append(Spacer(1, 12))
 
-    for key in ["What is your full name?", "How many tickets are you purchasing?", "What is your email address?"]:
-        if key in qa_map:
-            story.append(Paragraph(f"{key.split('?')[0]}: {qa_map[key]}", styles['Normal']))
+    for q_label in ["What is your full name?", "How many tickets are you purchasing?", "What is your email address?"]:
+        if q_label in qa_map:
+            story.append(Paragraph(f"{q_label.split('?')[0]}: {qa_map[q_label]}", styles['Normal']))
 
     story.append(Spacer(1, 12))
     story.append(Paragraph("Full Q&A:", styles['Heading2']))
@@ -155,8 +148,8 @@ def email_ticket(receiver_email, pdf_file):
     smtp_server = "smtp.gmail.com"
     sender_email = "tainoheritagecamp@gmail.com"
     password = os.environ.get("EMAIL_PASS")
-    from email.message import EmailMessage
 
+    from email.message import EmailMessage
     msg = EmailMessage()
     msg['From'] = sender_email
     msg['To'] = receiver_email
@@ -177,7 +170,7 @@ def email_ticket(receiver_email, pdf_file):
         add_debug_log(f"SMTP error: {e}")
         return False
 
-# ----------------- MAIN -----------------
+# ---------------- Run App ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
