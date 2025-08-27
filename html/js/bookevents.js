@@ -21,7 +21,10 @@ lightbox.addEventListener("click", (e) => {
   }
 });
 
-function addMessage(sender, text) {
+function addMessage(sender, text, clearPrevious=false) {
+    if (clearPrevious && sender === "agent") {
+        chat.innerHTML = "";
+    }
     const div = document.createElement("div");
     div.className = sender === "agent" ? "agent-msg" : "user-msg";
     div.textContent = (sender === "agent" ? "Agent: " : "You: ") + text;
@@ -29,12 +32,14 @@ function addMessage(sender, text) {
     chat.scrollTop = chat.scrollHeight;
 }
 
+addMessage("agent", data.question, clearPrevious=true);
 
 async function sendAnswer(answer) {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/answer", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
+            credentials: "include",
             body: JSON.stringify({ answer })
         });
         const data = await res.json();
@@ -50,7 +55,9 @@ async function sendAnswer(answer) {
 
 async function loadQuestion() {
     try {
-        const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/ask");
+        const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/ask", {
+            credentials: "include"
+        });
         const data = await res.json();
         // 2 sec delay before displaying
         await new Promise(r => setTimeout(r, 2000));
