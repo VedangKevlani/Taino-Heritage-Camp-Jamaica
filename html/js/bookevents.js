@@ -32,7 +32,7 @@ function addMessage(sender, text, clearPrevious=false) {
 
 //addMessage("agent", data.question, clearPrevious=true);
 
-// Send user answer to backend and get next question
+
 async function sendAnswer(answer) {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/answer", {
@@ -57,8 +57,17 @@ async function sendAnswer(answer) {
         addMessage("agent", "Error: Could not reach server.");
         console.error(err);
         input.disabled = false;
+    } finally {
+        isSending = false; // ✅ allow next answer
     }
 }
+
+input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        btn.click();
+    }
+});
 
 // Load first question and clear chat
 async function loadQuestion() {
@@ -78,10 +87,13 @@ async function loadQuestion() {
 btn.addEventListener("click", (e) => {
     e.preventDefault();
     const answer = input.value.trim();
-    if (!answer) return;
+    if (!answer || isSending) return; // ✅ prevent double sends
+    isSending = true;                   // mark as sending
+
     addMessage("user", answer);
     input.value = "";
     input.disabled = true;
+
     sendAnswer(answer);
 });
 
