@@ -27,7 +27,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Park marker
 const parkIcon = L.icon({
-    iconUrl: 'Taino Heritage Camps logo.jpg', // Replace with your marker image
+    iconUrl: '../images/Taino Heritage Camps logo.jpg', // Replace with your marker image
     iconSize: [30, 30]
 });
 L.marker([18.384744, -76.938089], {icon: parkIcon})
