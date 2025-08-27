@@ -12,6 +12,9 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = "sUp3Rs3cr3tK3y"
 app.config["SESSION_TYPE"] = "filesystem"
+# Use Redis for sessions
+app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
 Session(app)
 
 # ✅ Proper CORS for Netlify frontend
@@ -29,14 +32,21 @@ questions = [
     "What is your email address? Once you enter a valid email, a ticket will be sent."
 ]
 
+@app.route("/reset", methods=["POST"])
+def reset_session():
+    session.clear()
+    return jsonify({"status": "ok"})
+
 @app.route("/ask", methods=["GET"])
 def get_question():
     if "current_index" not in session or "answers" not in session:
         session["current_index"] = 0
         session["answers"] = []
+
     idx = session["current_index"]
     if idx >= len(questions):
-        return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
+        return jsonify({"question":"All done! Your ticket has been sent to your email.","done":True})
+    
     return jsonify({"question": questions[idx], "done": False})
 
 @app.route("/answer", methods=["POST"])
@@ -44,7 +54,7 @@ def answer():
     data = request.get_json()
     user_answer = data.get("answer", "").strip()
     if not user_answer:
-        return jsonify({"question": "Please provide a valid answer.", "done": False})
+        return jsonify({"question":"Please provide a valid answer.","done":False})
 
     idx = session.get("current_index", 0)
     answers = session.get("answers", [])
@@ -56,20 +66,20 @@ def answer():
     if idx < len(questions):
         return jsonify({"question": questions[idx], "done": False})
 
-    # Last question → generate ticket & email
     try:
         pdf_filename = generate_ticket(answers)
         email_ticket(answers[-1], pdf_filename)
     except Exception as e:
+        print(f"Error generating/emailing ticket: {e}")
         session.clear()
         return jsonify({"question": "An error occurred while generating your ticket.", "done": True})
 
     session.clear()
     return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
 
-# ---------------- Helper functions ----------------
+# ----------------- Helper Functions -----------------
 def generate_ticket(answers):
-    safe_name = answers[0].replace(" ", "_")  # Name is first answer
+    safe_name = answers[1].replace(" ", "_")
     filename = f"Taino_HCGuest_Ticket_{safe_name}.pdf"
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
@@ -87,21 +97,21 @@ def generate_ticket(answers):
     c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 14)
     labels = [
-        ("Name", answers[0]),
-        ("Tickets", answers[1]),
-        ("Group", answers[2]),
-        ("Phone", answers[3]),
-        ("Package", answers[4]),
-        ("Date", answers[5]),
-        ("Email", answers[6])
+        ("Name", answers[1]),
+        ("Tickets", answers[2]),
+        ("Group", answers[3]),
+        ("Phone", answers[4]),
+        ("Package", answers[5]),
+        ("Date", answers[6]),
+        ("Email", answers[7]),
     ]
-    y = height - 120
+    y = height-120
     for label, value in labels:
         c.drawString(70, y, f"{label}: {value}")
         y -= 40
 
-    # QR code
-    qr_data = f"Name: {answers[0]} | Tickets: {answers[1]} | Date: {answers[5]}"
+    # QR Code
+    qr_data = f"Name: {answers[1]} | Tickets: {answers[2]} | Date: {answers[6]}"
     qr = qrcode.make(qr_data)
     qr_file = f"{safe_name}_qr.png"
     qr.save(qr_file)
@@ -120,7 +130,6 @@ def email_ticket(receiver_email, pdf_file):
     smtp_server = "smtp.gmail.com"
     sender_email = "tainoheritagecamp@gmail.com"
     password = os.environ.get("EMAIL_PASS")
-
     from email.message import EmailMessage
     msg = EmailMessage()
     msg['From'] = sender_email
@@ -132,9 +141,15 @@ def email_ticket(receiver_email, pdf_file):
         msg.add_attachment(f.read(), maintype='application', subtype='pdf', filename=os.path.basename(pdf_file))
 
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-        server.login(sender_email, password)
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+            server.login(sender_email, password)
+            server.send_message(msg)
+        print(f"Ticket sent to {receiver_email}")
+        return True
+    except smtplib.SMTPException as e:
+        print("SMTP error:", e)
+        return False
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(port=5000, debug=True, use_reloader=True)
