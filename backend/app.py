@@ -27,6 +27,11 @@ CORS(app, supports_credentials=True, origins=[
     "https://tainoheritagecamp.netlify.app"
 ])
 
+@app.route("/reset", methods=["POST"])
+def reset_session():
+    session.clear()
+    return jsonify({"status": "ok"})
+
 questions = [
     "Welcome guest! What is your full name?",
     "How many tickets are you purchasing?",
@@ -36,11 +41,6 @@ questions = [
     "What date would you like to visit?",
     "What is your email address? Once you enter a valid email, a ticket will be sent."
 ]
-
-@app.route("/reset", methods=["POST"])
-def reset_session():
-    session.clear()
-    return jsonify({"status": "ok"})
 
 @app.route("/ask", methods=["GET"])
 def ask():
@@ -67,7 +67,6 @@ def answer():
     step = session.get("step", 0)
     answers = session.get("answers", [])
 
-    # Save this answer
     if len(answers) == step:
         answers.append(user_answer)
         session["answers"] = answers
@@ -93,6 +92,7 @@ def answer():
         "step": step,
         "answers": answers
     })
+
 
 # ----------------- Helper Functions -----------------
 def generate_ticket(answers):
