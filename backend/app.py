@@ -93,7 +93,6 @@ def answer():
 @app.route("/debug")
 def debug():
     print("REDIS_URL:", os.environ.get("REDIS_URL"))
-    print(r.ping()) 
     return jsonify({
         "step": session.get("step", 0),
         "answers": session.get("answers", [])
