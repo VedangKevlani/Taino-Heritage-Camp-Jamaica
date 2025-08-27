@@ -42,38 +42,16 @@ def reset_session():
     session.clear()
     return jsonify({"status": "ok"})
 
-@app.route("/ask", methods=["GET", "POST"])
+@app.route("/ask", methods=["GET"])
 def ask():
-    questions = [
-        "Welcome guest! What is your full name?",
-        "How many tickets are you purchasing?",
-        "What is your email address?",
-    ]
-
-    # pull session info
     step = session.get("step", 0)
     answers = session.get("answers", [])
 
-    if request.method == "POST":
-        user_answer = request.json.get("answer")
-
-        # move forward only if new
-        if user_answer and (len(answers) == step):
-            answers.append(user_answer)
-            session["answers"] = answers
-
-            step += 1
-            session["step"] = step
-
-    # prevent loop
     if step >= len(questions):
-        return jsonify({
-            "message": f"(step {step}) Thanks {answers[0]}, you booked {answers[1]} ticket(s). Confirmation sent to {answers[2]}.",
-            "done": True
-        })
+        return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
 
     return jsonify({
-        "question": f"(step {step}) {questions[step]}",   # <-- add step index here
+        "question": f"(step {step}) {questions[step]}",
         "done": False,
         "step": step,
         "answers": answers
@@ -86,19 +64,17 @@ def answer():
     if not user_answer:
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
-    # pull from session
     step = session.get("step", 0)
     answers = session.get("answers", [])
 
-    # store this answer
-    answers.append(user_answer)
-    session["answers"] = answers
+    # Save this answer
+    if len(answers) == step:
+        answers.append(user_answer)
+        session["answers"] = answers
 
-    # move to next step
     step += 1
     session["step"] = step
 
-    # check if finished
     if step >= len(questions):
         try:
             pdf_filename = generate_ticket(answers)
@@ -109,9 +85,8 @@ def answer():
             return jsonify({"question": "An error occurred while generating your ticket.", "done": True})
 
         session.clear()
-        return jsonify({"question": f"(step {step}) All done! Your ticket has been sent to your email.", "done": True})
+        return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
 
-    # return next question with index
     return jsonify({
         "question": f"(step {step}) {questions[step]}",
         "done": False,
