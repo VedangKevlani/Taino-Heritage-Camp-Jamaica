@@ -4,6 +4,10 @@ from flask_session import Session
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
+import uuid
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
 import qrcode, smtplib, ssl, os
 from flask_cors import CORS
 import tempfile
@@ -91,14 +95,35 @@ def answer():
         "answers": answers
     })
 
-# Debug endpoint
-@app.route("/debug")
+@app.route("/debug", methods=["GET", "POST"])
 def debug():
-    # print("REDIS_URL:", os.environ.get("REDIS_URL"))
-    return jsonify({
-        "step": session.get("step", 0),
-        "answers": session.get("answers", [])
-    })
+    # Show current session info
+    step = session.get("step", 0)
+    answers = session.get("answers", [])
+
+    # If POST, show the incoming data too
+    incoming = {}
+    if request.method == "POST":
+        incoming = request.get_json() or {}
+
+    debug_info = {
+        "step_in_session": step,
+        "answers_in_session": answers,
+        "incoming_post_data": incoming
+    }
+
+    print("DEBUG:", debug_info)  # this will show in your server logs
+    return jsonify(debug_info)
+
+# Keep a simple in-memory log for debugging
+DEBUG_LOGS = []
+
+def add_debug_log(msg):
+    """Add a message to the in-memory debug log."""
+    DEBUG_LOGS.append(msg)
+    # Keep only last 50 logs to avoid memory issues
+    if len(DEBUG_LOGS) > 50:
+        DEBUG_LOGS.pop(0)
 
 # ----------------- Helper Functions -----------------
 def generate_ticket(answers):
