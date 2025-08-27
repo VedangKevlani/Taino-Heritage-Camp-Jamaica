@@ -6,6 +6,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 import qrcode, smtplib, ssl, os
 from flask_cors import CORS
+import tempfile
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,6 +16,7 @@ app.secret_key = "sUp3Rs3cr3tK3y"
 # Use Redis for session storage
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "chat:"
 Session(app)
