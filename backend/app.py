@@ -86,28 +86,38 @@ def answer():
     if not user_answer:
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
+    # pull from session
     step = session.get("step", 0)
     answers = session.get("answers", [])
+
+    # store this answer
     answers.append(user_answer)
     session["answers"] = answers
 
+    # move to next step
     step += 1
     session["step"] = step
 
-    if step < len(questions):
-        return jsonify({"question": questions[step], "done": False})
+    # check if finished
+    if step >= len(questions):
+        try:
+            pdf_filename = generate_ticket(answers)
+            email_ticket(answers[-1], pdf_filename)
+        except Exception as e:
+            print(f"Error generating/emailing ticket: {e}")
+            session.clear()
+            return jsonify({"question": "An error occurred while generating your ticket.", "done": True})
 
-    # ✅ Ticket generation & email
-    try:
-        pdf_filename = generate_ticket(answers)
-        email_ticket(answers[-1], pdf_filename)
-    except Exception as e:
-        print(f"Error generating/emailing ticket: {e}")
         session.clear()
-        return jsonify({"question": "An error occurred while generating your ticket.", "done": True})
+        return jsonify({"question": f"(step {step}) All done! Your ticket has been sent to your email.", "done": True})
 
-    session.clear()
-    return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
+    # return next question with index
+    return jsonify({
+        "question": f"(step {step}) {questions[step]}",
+        "done": False,
+        "step": step,
+        "answers": answers
+    })
 
 # ----------------- Helper Functions -----------------
 def generate_ticket(answers):
