@@ -297,13 +297,15 @@ nav a.active::after {
 }
 
 .agent-msg {
-  background-color: #f1f1f1;
+  background-color: #16c524ff;
   color: black;
+  font-style: bold;
   align-self: flex-start;
 }
 
 .user-msg {
-  background: #d1f7d6;
+  background: #b1c21bff;
+  font-style: bold;
   align-self: flex-end;
 }
 

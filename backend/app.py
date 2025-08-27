@@ -14,7 +14,11 @@ app = Flask(__name__)
 app.secret_key = "sUp3Rs3cr3tK3y"
 app.config["SESSION_TYPE"] = "filesystem"
 # Use Redis for sessions
+# Use Redis for session storage
 app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_USE_SIGNER"] = True
+app.config["SESSION_KEY_PREFIX"] = "chat:"
 app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
 Session(app)
 
@@ -40,33 +44,37 @@ def reset_session():
 
 @app.route("/ask", methods=["GET"])
 def get_question():
-    if "current_index" not in session or "answers" not in session:
-        session["current_index"] = 0
+    if "step" not in session:
+        session["step"] = 0
         session["answers"] = []
 
-    idx = session["current_index"]
-    if idx >= len(questions):
-        return jsonify({"question":"All done! Your ticket has been sent to your email.","done":True})
-    
-    return jsonify({"question": questions[idx], "done": False})
+    step = session["step"]
+
+    if step >= len(questions):
+        return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
+
+    return jsonify({"question": questions[step], "done": False})
+
 
 @app.route("/answer", methods=["POST"])
 def answer():
     data = request.get_json()
     user_answer = data.get("answer", "").strip()
     if not user_answer:
-        return jsonify({"question":"Please provide a valid answer.","done":False})
+        return jsonify({"question": "Please provide a valid answer.", "done": False})
 
-    idx = session.get("current_index", 0)
+    step = session.get("step", 0)
     answers = session.get("answers", [])
     answers.append(user_answer)
     session["answers"] = answers
-    idx += 1
-    session["current_index"] = idx
 
-    if idx < len(questions):
-        return jsonify({"question": questions[idx], "done": False})
+    step += 1
+    session["step"] = step
 
+    if step < len(questions):
+        return jsonify({"question": questions[step], "done": False})
+
+    # ✅ Ticket generation & email
     try:
         pdf_filename = generate_ticket(answers)
         email_ticket(answers[-1], pdf_filename)
@@ -80,51 +88,36 @@ def answer():
 
 # ----------------- Helper Functions -----------------
 def generate_ticket(answers):
-    safe_name = answers[0].replace(" ", "_")  # use first answer as name
-    filename = f"Taino_HCGuest_Ticket_{safe_name}.pdf"
-    c = canvas.Canvas(filename, pagesize=A4)
-    width, height = A4
+    pdf_filename = f"ticket_{uuid.uuid4().hex}.pdf"
 
-    # Header
-    c.setFillColor(colors.black)
-    c.rect(0, height-100, width, 100, fill=1)
-    c.setFillColor(colors.white)
-    c.setFont("Helvetica-Bold", 24)
-    c.drawCentredString(width/2, height-60, "Taino Heritage Camp Ticket")
+    # Map answers to their corresponding questions
+    qa_map = {}
+    for q, a in zip(questions, answers):
+        qa_map[q] = a
 
-    # Info box
-    c.setFillColor(colors.lightgrey)
-    c.rect(50, height-500, width-100, 350, fill=1)
-    c.setFillColor(colors.black)
-    c.setFont("Helvetica-Bold", 14)
-    labels = [
-        ("Name", answers[0]),
-        ("Tickets", answers[1]),
-        ("Group", answers[2]),
-        ("Phone", answers[3]),
-        ("Package", answers[4]),
-        ("Date", answers[5]),
-        ("Email", answers[6]),
-    ]
-    y = height-120
-    for label, value in labels:
-        c.drawString(70, y, f"{label}: {value}")
-        y -= 40
+    doc = SimpleDocTemplate(pdf_filename, pagesize=letter)
+    styles = getSampleStyleSheet()
+    story = []
 
-    # QR Code
-    qr_data = f"Name: {answers[0]} | Tickets: {answers[1]} | Date: {answers[5]}"
-    qr = qrcode.make(qr_data)
-    qr_file = f"{safe_name}_qr.png"
-    qr.save(qr_file)
-    c.drawImage(qr_file, width-150, height-450, width=100, height=100)
-    os.remove(qr_file)
+    story.append(Paragraph("Taino Heritage Camp Ticket", styles['Title']))
+    story.append(Spacer(1, 12))
 
-    # Footer
-    c.setFont("Helvetica-Oblique", 12)
-    c.drawCentredString(width/2, 50, "Thank you for booking with Taino Heritage Camp!")
-    c.drawCentredString(width/2, 30, "Please bring this ticket with you on arrival.")
-    c.save()
-    return filename
+    # Now you can pull answers by question label
+    if "What is your full name?" in qa_map:
+        story.append(Paragraph(f"Name: {qa_map['What is your full name?']}", styles['Normal']))
+    if "How many tickets are you purchasing?" in qa_map:
+        story.append(Paragraph(f"Tickets: {qa_map['How many tickets are you purchasing?']}", styles['Normal']))
+    if "What is your email address?" in qa_map:
+        story.append(Paragraph(f"Email: {qa_map['What is your email address?']}", styles['Normal']))
+
+    # ✅ Add all answers in case you want a full transcript
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("Full Q&A:", styles['Heading2']))
+    for q, a in qa_map.items():
+        story.append(Paragraph(f"<b>{q}</b> {a}", styles['Normal']))
+
+    doc.build(story)
+    return pdf_filename
 
 def email_ticket(receiver_email, pdf_file):
     port = 465
