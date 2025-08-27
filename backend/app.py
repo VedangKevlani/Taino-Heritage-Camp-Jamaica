@@ -79,32 +79,34 @@ def ask():
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    data = request.get_json()
+    data = request.get_json() or {}
     user_answer = data.get("answer", "").strip()
+
     if not user_answer:
+        add_debug_log("Empty answer received")
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
-    # Pull session
     step = session.get("step", 0)
     answers = session.get("answers", [])
 
-    # Increment step before appending answer
-    session["step"] = step + 1
+    step += 1
+    session["step"] = step
 
-    # Append answer
-    if len(answers) < len(questions):
+    if len(answers) == step:
         answers.append(user_answer)
         session["answers"] = answers
+        add_debug_log(f"Answer recorded for step {step}: {user_answer}")
 
-    # Check if finished
-    if session["step"] >= len(questions):
+    if step >= len(questions):
         session.clear()
+        add_debug_log("All questions answered, session cleared")
         return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
 
+    add_debug_log(f"Asking next question {step}: {questions[step]}")
     return jsonify({
-        "question": questions[session['step']],
+        "question": questions[step],
         "done": False,
-        "step": session['step'],
+        "step": step,
         "answers": answers
     })
 
