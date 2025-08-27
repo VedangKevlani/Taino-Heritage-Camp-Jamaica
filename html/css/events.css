@@ -299,13 +299,16 @@ nav a.active::after {
 .agent-msg {
   background-color: #16c524ff;
   color: black;
-  font-style: bold;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 700;
   align-self: flex-start;
 }
 
 .user-msg {
   background: #b1c21bff;
-  font-style: bold;
+  color: black;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 700;
   align-self: flex-end;
 }
 
