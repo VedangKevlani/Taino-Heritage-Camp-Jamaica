@@ -13,11 +13,10 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = "sUp3Rs3cr3tK3y"
 # Use Redis for session storage
-app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "chat:"
-app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
 Session(app)
 
 # ✅ Proper CORS for Netlify frontend
