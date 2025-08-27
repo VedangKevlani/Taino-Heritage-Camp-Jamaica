@@ -13,7 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = "sUp3Rs3cr3tK3y"
 # Use Redis for session storage
-app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_TYPE"] = "redis"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "chat:"
@@ -29,7 +29,7 @@ CORS(app, supports_credentials=True, origins=[
 @app.route("/", methods=["GET"])
 def test():
     return "This is working sir"
-    
+
 @app.route("/reset", methods=["POST"])
 def reset_session():
     session.clear()
