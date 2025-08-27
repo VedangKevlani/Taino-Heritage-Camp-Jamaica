@@ -17,7 +17,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "chat:"
-# app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
+app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
 Session(app)
 
 # ✅ Proper CORS for Netlify frontend
@@ -64,14 +64,14 @@ def answer():
 
     step = session.get("step", 0)
     answers = session.get("answers", [])
-
+    
     if len(answers) == step:
         answers.append(user_answer)
         session["answers"] = answers
 
     step += 1
     session["step"] = step
-
+    print(step)
     if step >= len(questions):
         try:
             pdf_filename = generate_ticket(answers)
