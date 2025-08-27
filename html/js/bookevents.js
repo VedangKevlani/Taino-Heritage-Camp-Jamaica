@@ -22,30 +22,37 @@ lightbox.addEventListener("click", (e) => {
 });
 
 function addMessage(sender, text, clearPrevious=false) {
-    if (clearPrevious && sender === "agent") {
-        chat.innerHTML = "";
-    }
+    if (clearPrevious && sender === "agent") chat.innerHTML = "";
     const div = document.createElement("div");
     div.className = sender === "agent" ? "agent-msg" : "user-msg";
     div.textContent = (sender === "agent" ? "Agent: " : "You: ") + text;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-}
+}}
 
-addMessage("agent", data.question, clearPrevious=true);
+//addMessage("agent", data.question, clearPrevious=true);
 
+// Send user answer to backend and get next question
 async function sendAnswer(answer) {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/answer", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             credentials: "include",
             body: JSON.stringify({ answer })
         });
         const data = await res.json();
+
+        // Wait 2 seconds before showing next agent message
         await new Promise(r => setTimeout(r, 2000));
         addMessage("agent", data.question);
-        if (!data.done) input.disabled = false;
+
+        if (!data.done) {
+            input.disabled = false;
+            input.focus();
+        } else {
+            input.disabled = true; // session done
+        }
     } catch (err) {
         addMessage("agent", "Error: Could not reach server.");
         console.error(err);
@@ -53,15 +60,15 @@ async function sendAnswer(answer) {
     }
 }
 
+// Load first question and clear chat
 async function loadQuestion() {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/ask", {
             credentials: "include"
         });
         const data = await res.json();
-        // 2 sec delay before displaying
         await new Promise(r => setTimeout(r, 2000));
-        addMessage("agent", data.question);
+        addMessage("agent", data.question, true); // clearPrevious = true
     } catch (err) {
         addMessage("agent", "Error: Could not reach server.");
         console.error(err);
