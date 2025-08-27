@@ -7,7 +7,7 @@
 
 body {
     font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;   
-    background: url("../images/neon\ green.jpg") center/cover no-repeat fixed;
+    background: url("images/neon\ green.jpg") center/cover no-repeat fixed;
     color: #e7e7e7;
     min-height: 100vh;
     line-height: 1.5;
