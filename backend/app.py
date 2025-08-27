@@ -43,30 +43,41 @@ def reset_session():
     return jsonify({"status": "ok"})
 
 @app.route("/ask", methods=["GET", "POST"])
-def get_question():
+def ask():
     questions = [
         "Welcome guest! What is your full name?",
         "How many tickets are you purchasing?",
         "What is your email address?",
     ]
 
-    answers = session.get("answers", [])
+    # pull session info
     step = session.get("step", 0)
+    answers = session.get("answers", [])
 
     if request.method == "POST":
         user_answer = request.json.get("answer")
-        if user_answer:
+
+        # only move forward if this answer is new
+        if user_answer and (len(answers) == step):
             answers.append(user_answer)
             session["answers"] = answers
-            step += 1   # ✅ move to next question
+
+            step += 1  # go to next step
             session["step"] = step
 
-    if step < len(questions):
-        return jsonify({"question": questions[step], "done": False})
-    else:
-        # All questions answered
-        return jsonify({"message": "Thank you! Your ticket will be generated.", "done": True})
+    # safety: prevent looping
+    if step >= len(questions):
+        return jsonify({
+            "message": f"Thanks {answers[0]}, you booked {answers[1]} ticket(s). Confirmation sent to {answers[2]}.",
+            "done": True
+        })
 
+    return jsonify({
+        "question": questions[step],
+        "done": False,
+        "step": step,              # 🔍 extra debug info
+        "answers": answers         # 🔍 extra debug info
+    })
 
 @app.route("/answer", methods=["POST"])
 def answer():
