@@ -16,11 +16,7 @@ app.secret_key = "sUp3Rs3cr3tK3y"
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-CORS(app, supports_credentials=True, origins=[
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "https://tainoheritagecamp.netlify.app/"
-])
+CORS(app, supports_credentials=True, origins="*")
 
 questions = [
     "Welcome guest! What is your full name?",
