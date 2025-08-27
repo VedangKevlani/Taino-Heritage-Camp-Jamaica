@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, session
-import redis
+# import redis
 from flask_session import Session
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -92,7 +92,7 @@ def answer():
 # Debug endpoint
 @app.route("/debug")
 def debug():
-    print("REDIS_URL:", os.environ.get("REDIS_URL"))
+    # print("REDIS_URL:", os.environ.get("REDIS_URL"))
     return jsonify({
         "step": session.get("step", 0),
         "answers": session.get("answers", [])
