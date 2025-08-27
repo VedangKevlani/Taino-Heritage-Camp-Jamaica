@@ -58,7 +58,8 @@ def reset_session():
 
 @app.route("/ask", methods=["GET"])
 def ask():
-    if "step" not in session:
+    # Initialize session if first time
+    if "step" not in session or "answers" not in session:
         session["step"] = 0
         session["answers"] = []
         add_debug_log("Initialized session keys")
@@ -66,6 +67,7 @@ def ask():
     step = session["step"]
     answers = session["answers"]
 
+    # Return done if all questions answered
     if step >= len(questions):
         return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
 
@@ -86,16 +88,21 @@ def answer():
         add_debug_log("Empty answer received")
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
-    # Pull session
-    step = session.get("step", 0)
-    answers = session.get("answers", [])
+    # Ensure session is initialized
+    if "step" not in session or "answers" not in session:
+        session["step"] = 0
+        session["answers"] = []
+        add_debug_log("Session re-initialized in /answer")
 
-    # Append answer first
+    step = session["step"]
+    answers = session["answers"]
+
+    # Append answer for current step
     answers.append(user_answer)
     session["answers"] = answers
     add_debug_log(f"Answer recorded for step {step}: {user_answer}")
 
-    # Increment step after recording
+    # Increment step
     step += 1
     session["step"] = step
 
@@ -113,13 +120,12 @@ def answer():
         "answers": answers
     })
 
-
 @app.route("/debug", methods=["GET"])
 def debug():
     debug_info = {
         "step_in_session": session.get("step", 0),
         "answers_in_session": session.get("answers", []),
-        "debug_logs": DEBUG_LOGS[-20:]  # last 20 logs
+        "debug_logs": DEBUG_LOGS[-50:]  # last 50 logs
     }
     return jsonify(debug_info)
 
