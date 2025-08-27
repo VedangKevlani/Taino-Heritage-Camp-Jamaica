@@ -34,20 +34,23 @@ function addMessage(sender, text, clearPrevious=false) {
 
 
 async function sendAnswer(answer) {
-    if (isSending) return; // prevent double send
+    if (isSending) return;
     isSending = true;
     input.disabled = true;
 
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/answer", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ answer })
+            headers: {
+                "Content-Type": "application/json"  // ✅ This is required
+            },
+            credentials: "include",  // include cookies for session
+            body: JSON.stringify({ answer })     // convert JS object to JSON
         });
-        const data = await res.json();
 
+        const data = await res.json();
         addMessage("agent", data.question);
+
         if (!data.done) {
             input.disabled = false;
             input.focus();
@@ -60,7 +63,6 @@ async function sendAnswer(answer) {
         isSending = false;
     }
 }
-
 
 input.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
