@@ -93,6 +93,12 @@ def answer():
         "answers": answers
     })
 
+@app.route("/debug", methods=["GET"])
+def debug():
+    return jsonify({
+        "step": session.get("step", 0),
+        "answers": session.get("answers", [])
+    })
 
 # ----------------- Helper Functions -----------------
 def generate_ticket(answers):
