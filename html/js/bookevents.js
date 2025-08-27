@@ -28,7 +28,7 @@ function addMessage(sender, text, clearPrevious=false) {
     div.textContent = (sender === "agent" ? "Agent: " : "You: ") + text;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-}}
+}
 
 //addMessage("agent", data.question, clearPrevious=true);
 
