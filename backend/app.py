@@ -86,17 +86,20 @@ def answer():
         add_debug_log("Empty answer received")
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
+    # Pull session
     step = session.get("step", 0)
     answers = session.get("answers", [])
 
+    # Append answer first
+    answers.append(user_answer)
+    session["answers"] = answers
+    add_debug_log(f"Answer recorded for step {step}: {user_answer}")
+
+    # Increment step after recording
     step += 1
     session["step"] = step
 
-    if len(answers) == step:
-        answers.append(user_answer)
-        session["answers"] = answers
-        add_debug_log(f"Answer recorded for step {step}: {user_answer}")
-
+    # Check if finished
     if step >= len(questions):
         session.clear()
         add_debug_log("All questions answered, session cleared")
@@ -109,6 +112,7 @@ def answer():
         "step": step,
         "answers": answers
     })
+
 
 @app.route("/debug", methods=["GET"])
 def debug():
