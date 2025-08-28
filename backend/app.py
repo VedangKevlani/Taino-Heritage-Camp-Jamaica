@@ -1,46 +1,43 @@
-from flask import Flask, request, jsonify, session
+# backend/app.py
+from flask import Flask, request, jsonify, session, make_response
 from flask_session import Session
-from flask_cors import CORS
-import tempfile
-import uuid, os, smtplib, ssl
+import os, tempfile, uuid, ssl, smtplib
+from dotenv import load_dotenv
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-# app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
-# # ---------------- Session Configuration ----------------
-# app.config["SESSION_TYPE"] = "filesystem"
-# app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
-# app.config["SESSION_PERMANENT"] = False
-# app.config["SESSION_USE_SIGNER"] = True
-# app.config["SESSION_KEY_PREFIX"] = "chat:"
-# Session(app)
+# ---------------- CONFIG ----------------
+# Secret (set in Render env var SECRET_KEY in production)
+app.secret_key = os.getenv("SECRET_KEY", "dev_local_secret_please_change")
 
-# # ---------------- CORS ----------------
-# # Add your Netlify domain and localhost for testing
-# CORS(app, supports_credentials=True, origins=[
-#     "https://tainoheritagecamp.netlify.app",
-#     "http://localhost:5173",
-#     "http://localhost:5500"
-# ])
-
-# Secret key for sessions
-app.secret_key = "sUp3Rs3cr3tK3y"
-
-# Configure server-side session
+# Session backend (filesystem for now; change to redis for multi-instance)
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_COOKIE_SAMESITE"] = "None"   # Important for cross-origin
-app.config["SESSION_COOKIE_SECURE"] = True       # Render uses HTTPS
+app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
+app.config["SESSION_PERMANENT"] = False
+
+# Cookie attributes for cross-site cookies:
+# - When deployed, set SESSION_COOKIE_SECURE="True" in env to use Secure cookies.
+# - For local testing over http, set SESSION_COOKIE_SECURE="False".
+secure_cookie = os.getenv("SESSION_COOKIE_SECURE", "True").lower() == "true"
+app.config["SESSION_COOKIE_SAMESITE"] = "None"  # required for cross-site cookies
+app.config["SESSION_COOKIE_SECURE"] = secure_cookie
+app.config["SESSION_COOKIE_HTTPONLY"] = True
 
 Session(app)
 
-# Allow frontend domain to send cookies
-CORS(app, supports_credentials=True, origins=["https://taino-heritage-camp.netlify.app"])
+# ---------------- Allowed origins ----------------
+# Replace/add your exact Netlify domain(s) here if different.
+ALLOWED_ORIGINS = {
+    "https://tainoheritagecamp.netlify.app",
+    "https://taino-heritage-camp.netlify.app",
+    "http://localhost:5173",
+    "http://localhost:5500"
+}
 
 # ---------------- Questions ----------------
 questions = [
@@ -53,25 +50,44 @@ questions = [
     "What is your email address? Once you enter a valid email, a ticket will be sent."
 ]
 
-# ---------------- In-Memory Debug Log ----------------
+# ---------------- Debug logs ----------------
 DEBUG_LOGS = []
-
 def add_debug_log(msg):
     DEBUG_LOGS.append(msg)
-    if len(DEBUG_LOGS) > 200:
+    if len(DEBUG_LOGS) > 300:
         DEBUG_LOGS.pop(0)
 
-# ---------------- Error handler (returns JSON instead of HTML) ----------------
+# ---------------- CORS / preflight handling ----------------
+# We set Access-Control-Allow-Origin dynamically (echo the Origin) so browsers accept cookies.
+@app.after_request
+def set_cors_headers(response):
+    origin = request.headers.get("Origin")
+    if origin and origin in ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+    # else: do not set allow-origin (or set to none) — prevents accidental open CORS.
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
+    return response
+
+@app.before_request
+def handle_options_requests():
+    # For CORS preflight
+    if request.method == "OPTIONS":
+        resp = make_response()
+        resp.status_code = 200
+        return resp
+
+# ---------------- Error handler (JSON) ----------------
 @app.errorhandler(Exception)
 def handle_exception(e):
     add_debug_log(f"Unhandled exception: {repr(e)}")
-    # Return JSON for easier frontend parsing
     return jsonify({"error": "internal_server_error", "message": str(e)}), 500
 
 # ---------------- Routes ----------------
 @app.route("/", methods=["GET"])
 def test():
-    return "This is working sir"
+    return "Ticketing agent backend is running."
 
 @app.route("/reset", methods=["POST"])
 def reset_session():
@@ -81,7 +97,7 @@ def reset_session():
 
 @app.route("/ask", methods=["GET"])
 def ask():
-    # initialize session if missing
+    # init session keys if missing
     if "step" not in session or "answers" not in session:
         session["step"] = 0
         session["answers"] = []
@@ -115,36 +131,34 @@ def answer():
     if "step" not in session or "answers" not in session:
         session["step"] = 0
         session["answers"] = []
+        add_debug_log("Session auto-initialized on /answer")
 
     step = int(session.get("step", 0))
     answers = session.get("answers", [])
 
-    # Save the answer for the current step (only if still within bounds)
+    # Append answer only if still within questions length
     if step < len(questions):
         answers.append(user_answer)
         session["answers"] = answers
         add_debug_log(f"Answer recorded for step {step}: {user_answer}")
     else:
-        add_debug_log(f"Answer received but step {step} >= questions length")
+        add_debug_log(f"Received answer but step {step} already >= questions length")
 
-    # Advance step (move to next question)
-    step = step + 1
+    # Advance step
+    step += 1
     session["step"] = step
     session.modified = True
 
-    # If finished, return done
+    # Completed flow
     if step >= len(questions):
-        add_debug_log("All questions answered, finalizing and clearing session")
-        result = {"message": "All done! Thank you.", "done": True, "answers": session.get("answers", [])}
-        # optional: do not clear immediately if you want debug; here we leave answers but reset step
-        # session.clear()
-        return jsonify(result)
+        add_debug_log("All questions answered; returning done")
+        return jsonify({"message": "All done! Thank you.", "done": True, "answers": session.get("answers", [])})
 
-    # Otherwise return next question
-    next_question = questions[step]
-    add_debug_log(f"Asking next question {step}: {next_question}")
+    # Otherwise return next question (safe index)
+    next_q = questions[step]
+    add_debug_log(f"Asking next question {step}: {next_q}")
     return jsonify({
-        "question": next_question,
+        "question": next_q,
         "done": False,
         "step": step,
         "answers": session.get("answers", [])
@@ -155,10 +169,10 @@ def debug():
     return jsonify({
         "step_in_session": session.get("step", 0),
         "answers_in_session": session.get("answers", []),
-        "debug_logs": DEBUG_LOGS[-50:]
+        "debug_logs": DEBUG_LOGS[-100:]
     })
 
-# ---------------- Helper Functions (ticket/email) ----------------
+# ---------------- Ticket/email helpers (unchanged) ----------------
 def generate_ticket(answers):
     pdf_filename = f"ticket_{uuid.uuid4().hex}.pdf"
     qa_map = {q: a for q, a in zip(questions, answers)}
@@ -186,7 +200,7 @@ def email_ticket(receiver_email, pdf_file):
     port = 465
     smtp_server = "smtp.gmail.com"
     sender_email = "tainoheritagecamp@gmail.com"
-    password = os.environ.get("EMAIL_PASS")
+    password = os.getenv("EMAIL_PASS")
 
     from email.message import EmailMessage
     msg = EmailMessage()
@@ -209,6 +223,8 @@ def email_ticket(receiver_email, pdf_file):
         add_debug_log(f"SMTP error: {e}")
         return False
 
-# ---------------- Run App (local) ----------------
+# ---------------- Run (local) ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
+    host = "0.0.0.0"
+    port = int(os.getenv("PORT", 5000))
+    app.run(host=host, port=port, debug=False)
