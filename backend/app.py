@@ -22,8 +22,11 @@ app.config["SESSION_KEY_PREFIX"] = "chat:"
 Session(app)
 
 # ---------------- CORS ----------------
+# Add your Netlify domain and localhost for testing
 CORS(app, supports_credentials=True, origins=[
-    "https://tainoheritagecamp.netlify.app"
+    "https://tainoheritagecamp.netlify.app",
+    "http://localhost:5173",
+    "http://localhost:5500"
 ])
 
 # ---------------- Questions ----------------
@@ -42,8 +45,15 @@ DEBUG_LOGS = []
 
 def add_debug_log(msg):
     DEBUG_LOGS.append(msg)
-    if len(DEBUG_LOGS) > 50:
+    if len(DEBUG_LOGS) > 200:
         DEBUG_LOGS.pop(0)
+
+# ---------------- Error handler (returns JSON instead of HTML) ----------------
+@app.errorhandler(Exception)
+def handle_exception(e):
+    add_debug_log(f"Unhandled exception: {repr(e)}")
+    # Return JSON for easier frontend parsing
+    return jsonify({"error": "internal_server_error", "message": str(e)}), 500
 
 # ---------------- Routes ----------------
 @app.route("/", methods=["GET"])
@@ -58,15 +68,17 @@ def reset_session():
 
 @app.route("/ask", methods=["GET"])
 def ask():
-    if "step" not in session:
+    # initialize session if missing
+    if "step" not in session or "answers" not in session:
         session["step"] = 0
         session["answers"] = []
         add_debug_log("Initialized session keys")
 
-    step = session["step"]
-    answers = session["answers"]
+    step = int(session.get("step", 0))
+    answers = session.get("answers", [])
 
     if step >= len(questions):
+        add_debug_log("Asked after completion")
         return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
 
     add_debug_log(f"Asking question {step}: {questions[step]}")
@@ -79,58 +91,61 @@ def ask():
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    data = request.get_json() or {}
-    data = request.get_json()
-    user_answer = data.get("answer", "").strip()
+    data = request.get_json(force=True) or {}
+    user_answer = (data.get("answer") or "").strip()
 
-    if not user_answer:
+    if user_answer == "":
         add_debug_log("Empty answer received")
-        return jsonify({"question": "Please provide a valid answer.", "done": False})
+        return jsonify({"error": "empty_answer", "message": "Please provide a valid answer."}), 400
 
-    # Pull session
-    step = session.get("step", 0)
+    # ensure session initialized
+    if "step" not in session or "answers" not in session:
+        session["step"] = 0
+        session["answers"] = []
+
+    step = int(session.get("step", 0))
     answers = session.get("answers", [])
 
-    if len(answers) == step:
-    # Increment step before appending answer
-        session["step"] = step + 1
-
-    # Append answer
-    if len(answers) < len(questions):
+    # Save the answer for the current step (only if still within bounds)
+    if step < len(questions):
         answers.append(user_answer)
         session["answers"] = answers
         add_debug_log(f"Answer recorded for step {step}: {user_answer}")
+    else:
+        add_debug_log(f"Answer received but step {step} >= questions length")
 
-    step += 1
+    # Advance step (move to next question)
+    step = step + 1
     session["step"] = step
+    session.modified = True
 
+    # If finished, return done
     if step >= len(questions):
-    # Check if finished
-        if session["step"] >= len(questions):
-            session.clear()
-            add_debug_log("All questions answered, session cleared")
-            return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
+        add_debug_log("All questions answered, finalizing and clearing session")
+        result = {"message": "All done! Thank you.", "done": True, "answers": session.get("answers", [])}
+        # optional: do not clear immediately if you want debug; here we leave answers but reset step
+        # session.clear()
+        return jsonify(result)
 
-    add_debug_log(f"Asking next question {step}: {questions[step]}")
+    # Otherwise return next question
+    next_question = questions[step]
+    add_debug_log(f"Asking next question {step}: {next_question}")
     return jsonify({
-        "question": questions[step],
-        "question": questions[session['step']],
+        "question": next_question,
         "done": False,
         "step": step,
-        "step": session['step'],
-        "answers": answers
+        "answers": session.get("answers", [])
     })
 
 @app.route("/debug", methods=["GET"])
 def debug():
-    debug_info = {
+    return jsonify({
         "step_in_session": session.get("step", 0),
         "answers_in_session": session.get("answers", []),
-        "debug_logs": DEBUG_LOGS[-20:]  # last 20 logs
-    }
-    return jsonify(debug_info)
+        "debug_logs": DEBUG_LOGS[-50:]
+    })
 
-# ---------------- Helper Functions ----------------
+# ---------------- Helper Functions (ticket/email) ----------------
 def generate_ticket(answers):
     pdf_filename = f"ticket_{uuid.uuid4().hex}.pdf"
     qa_map = {q: a for q, a in zip(questions, answers)}
@@ -181,6 +196,6 @@ def email_ticket(receiver_email, pdf_file):
         add_debug_log(f"SMTP error: {e}")
         return False
 
-# ---------------- Run App ----------------
+# ---------------- Run App (local) ----------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
