@@ -11,23 +11,36 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "devkey")
+# app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
-# ---------------- Session Configuration ----------------
+# # ---------------- Session Configuration ----------------
+# app.config["SESSION_TYPE"] = "filesystem"
+# app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
+# app.config["SESSION_PERMANENT"] = False
+# app.config["SESSION_USE_SIGNER"] = True
+# app.config["SESSION_KEY_PREFIX"] = "chat:"
+# Session(app)
+
+# # ---------------- CORS ----------------
+# # Add your Netlify domain and localhost for testing
+# CORS(app, supports_credentials=True, origins=[
+#     "https://tainoheritagecamp.netlify.app",
+#     "http://localhost:5173",
+#     "http://localhost:5500"
+# ])
+
+# Secret key for sessions
+app.secret_key = "sUp3Rs3cr3tK3y"
+
+# Configure server-side session
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_KEY_PREFIX"] = "chat:"
+app.config["SESSION_COOKIE_SAMESITE"] = "None"   # Important for cross-origin
+app.config["SESSION_COOKIE_SECURE"] = True       # Render uses HTTPS
+
 Session(app)
 
-# ---------------- CORS ----------------
-# Add your Netlify domain and localhost for testing
-CORS(app, supports_credentials=True, origins=[
-    "https://tainoheritagecamp.netlify.app",
-    "http://localhost:5173",
-    "http://localhost:5500"
-])
+# Allow frontend domain to send cookies
+CORS(app, supports_credentials=True, origins=["https://taino-heritage-camp.netlify.app"])
 
 # ---------------- Questions ----------------
 questions = [
@@ -68,74 +81,34 @@ def reset_session():
 
 @app.route("/ask", methods=["GET"])
 def ask():
-    # initialize session if missing
-    if "step" not in session or "answers" not in session:
-        session["step"] = 0
-        session["answers"] = []
-        add_debug_log("Initialized session keys")
-
-    step = int(session.get("step", 0))
-    answers = session.get("answers", [])
-
-    if step >= len(questions):
-        add_debug_log("Asked after completion")
-        return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
-
-    add_debug_log(f"Asking question {step}: {questions[step]}")
-    return jsonify({
-        "question": questions[step],
-        "done": False,
-        "step": step,
-        "answers": answers
-    })
+    # If new session, start at question 0
+    if "index" not in session:
+        session["index"] = 0
+    idx = session["index"]
+    return jsonify({"question": questions[idx]})
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    data = request.get_json(force=True) or {}
-    user_answer = (data.get("answer") or "").strip()
-
-    if user_answer == "":
-        add_debug_log("Empty answer received")
-        return jsonify({"error": "empty_answer", "message": "Please provide a valid answer."}), 400
-
-    # ensure session initialized
-    if "step" not in session or "answers" not in session:
-        session["step"] = 0
+    data = request.json
+    if "answers" not in session:
         session["answers"] = []
 
-    step = int(session.get("step", 0))
-    answers = session.get("answers", [])
-
-    # Save the answer for the current step (only if still within bounds)
-    if step < len(questions):
-        answers.append(user_answer)
-        session["answers"] = answers
-        add_debug_log(f"Answer recorded for step {step}: {user_answer}")
-    else:
-        add_debug_log(f"Answer received but step {step} >= questions length")
-
-    # Advance step (move to next question)
-    step = step + 1
-    session["step"] = step
+    # Store answer
+    session["answers"].append(data.get("answer", ""))
     session.modified = True
 
-    # If finished, return done
-    if step >= len(questions):
-        add_debug_log("All questions answered, finalizing and clearing session")
-        result = {"message": "All done! Thank you.", "done": True, "answers": session.get("answers", [])}
-        # optional: do not clear immediately if you want debug; here we leave answers but reset step
-        # session.clear()
-        return jsonify(result)
+    # Move to next question
+    session["index"] += 1
+    idx = session["index"]
 
-    # Otherwise return next question
-    next_question = questions[step]
-    add_debug_log(f"Asking next question {step}: {next_question}")
-    return jsonify({
-        "question": next_question,
-        "done": False,
-        "step": step,
-        "answers": session.get("answers", [])
-    })
+    if idx >= len(questions):
+        return jsonify({"done": True, "answers": session["answers"]})
+
+    return jsonify({"question": questions[idx], "done": False})
+
+@app.route("/")
+def home():
+    return "Backend is running!"
 
 @app.route("/debug", methods=["GET"])
 def debug():
