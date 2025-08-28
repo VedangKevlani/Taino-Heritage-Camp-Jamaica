@@ -32,20 +32,20 @@ const today = new Date();
     const closeBtn = document.getElementById("closeLightbox");
     const lightbox = document.getElementById("lightbox");
 
-//     openBtn.addEventListener("click", () => {
-//       lightbox.style.display = "flex"; // show lightbox
-//     });
+    openBtn.addEventListener("click", () => {
+      lightbox.style.display = "flex"; // show lightbox
+    });
 
-//     closeBtn.addEventListener("click", () => {
-//       lightbox.style.display = "none"; // hide lightbox
-//     });
+    closeBtn.addEventListener("click", () => {
+      lightbox.style.display = "none"; // hide lightbox
+    });
 
-//     // Also close if user clicks outside content
-//     lightbox.addEventListener("click", (e) => {
-//       if (e.target === lightbox) {
-//         lightbox.style.display = "none";
-//       }
-//     });
+    // Also close if user clicks outside content
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) {
+        lightbox.style.display = "none";
+      }
+    });
 
 // // Unified render function
 // function renderEvents() {
@@ -89,11 +89,11 @@ const today = new Date();
 // form.addEventListener("submit", (e) => {
 //   e.preventDefault();
 
-//   const title = document.getElementById("event-title").value.trim();
-//   const date = document.getElementById("event-date").value;
-//   const description = document.getElementById("event-description").value.trim();
-//   const fileInput = document.getElementById("event-image-file");
-//   const file = fileInput.files[0];
+  // const title = document.getElementById("event-title").value.trim();
+  // const date = document.getElementById("event-date").value;
+  // const description = document.getElementById("event-description").value.trim();
+  // const fileInput = document.getElementById("event-image-file");
+  // const file = fileInput.files[0];
 
 //   if (!title || !date || !description || !file) {
 //     msg.textContent = "Please fill out all fields!";
@@ -219,12 +219,12 @@ form.addEventListener("submit", (e) => {
   reader.readAsDataURL(file);
 });
 
-// --- Lightbox social handlers ---
-openBtn.addEventListener("click", () => lightbox.style.display = "flex");
-closeBtn.addEventListener("click", () => lightbox.style.display = "none");
-lightbox.addEventListener("click", e => {
-  if (e.target === lightbox) lightbox.style.display = "none";
-});
+// // --- Lightbox social handlers ---
+// openBtn.addEventListener("click", () => lightbox.style.display = "flex");
+// closeBtn.addEventListener("click", () => lightbox.style.display = "none");
+// lightbox.addEventListener("click", e => {
+//   if (e.target === lightbox) lightbox.style.display = "none";
+// });
 
 // --- Initialize ---
 renderEvents();
