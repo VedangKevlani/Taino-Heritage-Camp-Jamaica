@@ -12,15 +12,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "devkey")
+app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
+
+# Redis config (works locally and in Render if REDIS_URL is set)
+redis_url = os.getenv("REDIS_URL")
+if redis_url:
+    app.config["SESSION_TYPE"] = "redis"
+    app.config["SESSION_REDIS"] = redis.from_url(redis_url)
+else:
+    # fallback to filesystem (for local testing)
+    app.config["SESSION_TYPE"] = "filesystem"
 
 # ---------------- Session Configuration ----------------
-app.config["SESSION_TYPE"] = "redis"
-app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
-app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_KEY_PREFIX"] = "chat:"
+# app.config["SESSION_TYPE"] = "redis"
+# app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
+# app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
+# app.config["SESSION_PERMANENT"] = False
+# app.config["SESSION_USE_SIGNER"] = True
+# app.config["SESSION_KEY_PREFIX"] = "chat:"
 Session(app)
 
 # ---------------- CORS ----------------
@@ -48,10 +57,6 @@ def add_debug_log(msg):
         DEBUG_LOGS.pop(0)
 
 # ---------------- Routes ----------------
-@app.route("/", methods=["GET"])
-def test():
-    return "This is working sir"
-
 @app.route("/reset", methods=["POST"])
 def reset_session():
     session.clear()
@@ -80,51 +85,46 @@ def ask():
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    data = request.get_json() or {}
-    user_answer = (data.get("answer") or "").strip()
+    data = request.get_json(force=True)
+    user_answer = data.get("answer")
 
-    step = session.get("step", 0)
-    answers = session.get("answers", [])
+    # Initialize session if new
+    if "answers" not in session:
+        session["answers"] = []
+        session["current_index"] = 0
 
-    if not user_answer:
+    # Record answer if not first question
+    idx = session.get("current_index", 0)
+    if idx > 0:
+        session["answers"].append(user_answer)
+
+    # Advance to next question
+    if idx < len(questions) - 1:
+        idx += 1
+        session["current_index"] = idx
+        session.modified = True
         return jsonify({
-            "question": "Please provide a valid answer.",
-            "done": False,
-            "step": step,
-            "answers": answers
+            "question": questions[idx],
+            "step": idx,
+            "answers_in_session": session["answers"]
         })
-
-    # save answer
-    answers.append(user_answer)
-    step += 1
-
-    session["step"] = step
-    session["answers"] = answers
-
-    if step >= len(questions):
+    else:
         return jsonify({
-            "question": "All done! Your ticket has been sent to your email.",
-            "done": True,
-            "step": step,
-            "answers": answers
+            "message": "All questions completed!",
+            "answers": session["answers"]
         })
-
-    return jsonify({
-        "question": questions[step],
-        "done": False,
-        "step": step,
-        "answers": answers
-    })
 
 
 @app.route("/debug", methods=["GET"])
 def debug():
-    debug_info = {
-        "step_in_session": session.get("step", 0),
-        "answers_in_session": session.get("answers", []),
-        "debug_logs": DEBUG_LOGS[-50:]  # last 50 logs
-    }
-    return jsonify(debug_info)
+    return jsonify({
+        "current_index": session.get("current_index"),
+        "answers_in_session": session.get("answers")
+    })
+
+@app.route("/")
+def home():
+    return "Ticketing agent backend is running!"
 
 # ---------------- Helper Functions ----------------
 def generate_ticket(answers):
