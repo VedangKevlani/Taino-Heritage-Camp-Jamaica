@@ -28,7 +28,7 @@ function addMessage(sender, text, clearPrevious=false) {
 async function loadQuestion() {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/ask", {
-            method: "POST",
+            method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             body: JSON.stringify({})
