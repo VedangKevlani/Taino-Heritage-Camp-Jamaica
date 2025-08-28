@@ -158,7 +158,14 @@ def answer():
     # Completed flow
     if step >= len(questions):
         add_debug_log("All questions answered; returning done")
-        return jsonify({"message": "All done! Thank you.", "done": True, "answers": session.get("answers", [])})
+        pdf_file, success = send_ticket_confirmation(answers)
+    
+        if not success:
+            add_debug_log("Failed to send ticket to guest or host")
+            return jsonify({"error": "ticket_error", "message": "Ticket generation or email failed."}), 500
+        
+        add_debug_log(f"Ticket successfully sent; PDF: {pdf_file}")
+        return jsonify({"message": "All done! Your ticket has been emailed.", "done": True, "answers": answers})
 
     # Otherwise return next question (safe index)
     next_q = questions[step]
@@ -179,7 +186,7 @@ def debug():
     })
 
 # ---------------- Ticket/email helpers (unchanged) ----------------
-def generate_ticket_pdf_canvas(answers, logo_path=None, out_dir="/tmp"):
+def generate_ticket_pdf_canvas(answers, logo_path="html/images/Taino_Heritage_Camps.png", out_dir="/tmp"):
     """
     Generate a styled ticket PDF using reportlab.canvas.
     - answers: list of strings (same order as questions)
