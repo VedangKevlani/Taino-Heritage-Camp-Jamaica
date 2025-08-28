@@ -31,7 +31,6 @@ async function loadQuestion() {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({})
         });
         const data = await res.json();
         addMessage("agent", data.question, true);
