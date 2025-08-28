@@ -81,7 +81,11 @@ body {
    height: 100%;
    object-fit: cover;
    opacity: 0.7;
-   z-index: -2; 
+   z-index: -2;
+   object-fit: cover;  /* makes sure it fills the screen */
+   z-index: -1;        /* behind all content */
+   opacity: 0.7;       /* semi-transparent if you want */
+   pointer-events: none; /* so clicks pass through the video */ 
 }
 
 /* Soft blur overlay */
