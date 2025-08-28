@@ -93,7 +93,7 @@ def answer():
 
     if len(answers) == step:
     # Increment step before appending answer
-    session["step"] = step + 1
+        session["step"] = step + 1
 
     # Append answer
     if len(answers) < len(questions):
