@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, session
 from flask_session import Session
 from flask_cors import CORS
+import redis
 import tempfile
 import uuid, os, smtplib, ssl
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -14,7 +15,8 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
 # ---------------- Session Configuration ----------------
-app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_URL"))
 app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
@@ -58,20 +60,15 @@ def reset_session():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    """
-    Frontend sends:
-    {
-        "step": int,          # current step (0-based)
-        "answers": [str,...]  # answers collected so far
-    }
-    Backend returns the next question.
-    """
-    data = request.get_json() or {}
-    step = int(data.get("step", 0))
-    answers = data.get("answers", [])
+    step = session.get("step", 0)
+    answers = session.get("answers", [])
 
     if step >= len(questions):
-        return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
+        return jsonify({
+            "message": "All questions answered.",
+            "done": True,
+            "answers": answers
+        })
 
     return jsonify({
         "question": questions[step],
@@ -83,29 +80,28 @@ def ask():
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    """
-    Frontend sends:
-    {
-        "step": int,          # current step (0-based)
-        "answers": [str,...], # answers collected so far
-        "answer": str         # the new answer for this step
-    }
-    Backend returns the next question.
-    """
     data = request.get_json() or {}
-    step = int(data.get("step", 0))
-    answers = data.get("answers", [])
     user_answer = (data.get("answer") or "").strip()
 
-    if not user_answer:
-        return jsonify({"question": "Please provide a valid answer.", "done": False, "step": step, "answers": answers})
+    step = session.get("step", 0)
+    answers = session.get("answers", [])
 
-    # Append the new answer
+    if not user_answer:
+        return jsonify({
+            "question": "Please provide a valid answer.",
+            "done": False,
+            "step": step,
+            "answers": answers
+        })
+
+    # save answer
     answers.append(user_answer)
-    step += 1  # move to next question
+    step += 1
+
+    session["step"] = step
+    session["answers"] = answers
 
     if step >= len(questions):
-        # All questions answered
         return jsonify({
             "question": "All done! Your ticket has been sent to your email.",
             "done": True,
@@ -119,6 +115,7 @@ def answer():
         "step": step,
         "answers": answers
     })
+
 
 @app.route("/debug", methods=["GET"])
 def debug():
