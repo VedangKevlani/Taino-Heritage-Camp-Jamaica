@@ -106,10 +106,10 @@ def answer():
 
     if step >= len(questions):
     # Check if finished
-    if session["step"] >= len(questions):
-        session.clear()
-        add_debug_log("All questions answered, session cleared")
-        return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
+        if session["step"] >= len(questions):
+            session.clear()
+            add_debug_log("All questions answered, session cleared")
+            return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
 
     add_debug_log(f"Asking next question {step}: {questions[step]}")
     return jsonify({
