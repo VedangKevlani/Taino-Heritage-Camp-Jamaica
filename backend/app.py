@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify, session
 from flask_session import Session
 from flask_cors import CORS
-import redis, os, tempfile, uuid, ssl, smtplib
+import tempfile
+import uuid, os, smtplib, ssl
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
@@ -10,17 +11,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
+app.secret_key = os.environ.get("SECRET_KEY", "devkey")
 
 # ---------------- Session Configuration ----------------
-redis_url = os.getenv("REDIS_URL")
-if redis_url:
-    app.config["SESSION_TYPE"] = "redis"
-    app.config["SESSION_REDIS"] = redis.from_url(redis_url)
-else:
-    app.config["SESSION_TYPE"] = "filesystem"
-    app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
-
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_USE_SIGNER"] = True
 app.config["SESSION_KEY_PREFIX"] = "chat:"
@@ -42,7 +37,7 @@ questions = [
     "What is your email address? Once you enter a valid email, a ticket will be sent."
 ]
 
-# ---------------- Debug Logs ----------------
+# ---------------- In-Memory Debug Log ----------------
 DEBUG_LOGS = []
 
 def add_debug_log(msg):
@@ -52,8 +47,8 @@ def add_debug_log(msg):
 
 # ---------------- Routes ----------------
 @app.route("/", methods=["GET"])
-def home():
-    return "Ticketing agent backend is running!"
+def test():
+    return "This is working sir"
 
 @app.route("/reset", methods=["POST"])
 def reset_session():
@@ -61,74 +56,81 @@ def reset_session():
     add_debug_log("Session reset")
     return jsonify({"status": "ok"})
 
-@app.route("/ask", methods=["POST"])
+@app.route("/ask", methods=["GET"])
 def ask():
-    # initialize session if not exists
-    if "current_index" not in session:
-        session["current_index"] = 0
+    if "step" not in session:
+        session["step"] = 0
         session["answers"] = []
+        add_debug_log("Initialized session keys")
 
-    idx = session["current_index"]
+    step = session["step"]
     answers = session["answers"]
 
-    if idx >= len(questions):
-        return jsonify({
-            "message": "All questions answered.",
-            "done": True,
-            "answers": answers
-        })
+    if step >= len(questions):
+        return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
 
+    add_debug_log(f"Asking question {step}: {questions[step]}")
     return jsonify({
-        "question": questions[idx],
+        "question": questions[step],
         "done": False,
-        "step": idx,
-        "answers_in_session": answers
+        "step": step,
+        "answers": answers
     })
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    data = request.get_json(force=True)
-    user_answer = (data.get("answer") or "").strip()
+    data = request.get_json() or {}
+    data = request.get_json()
+    user_answer = data.get("answer", "").strip()
 
     if not user_answer:
+        add_debug_log("Empty answer received")
         return jsonify({"question": "Please provide a valid answer.", "done": False})
 
-    # initialize session if missing
-    if "current_index" not in session:
-        session["current_index"] = 0
-        session["answers"] = []
+    # Pull session
+    step = session.get("step", 0)
+    answers = session.get("answers", [])
 
-    idx = session["current_index"]
-    session["answers"].append(user_answer)
+    if len(answers) == step:
+    # Increment step before appending answer
+    session["step"] = step + 1
 
-    # advance to next question
-    idx += 1
-    session["current_index"] = idx
-    session.modified = True
+    # Append answer
+    if len(answers) < len(questions):
+        answers.append(user_answer)
+        session["answers"] = answers
+        add_debug_log(f"Answer recorded for step {step}: {user_answer}")
 
-    if idx >= len(questions):
-        return jsonify({
-            "message": "All questions completed!",
-            "done": True,
-            "answers": session["answers"]
-        })
+    step += 1
+    session["step"] = step
 
+    if step >= len(questions):
+    # Check if finished
+    if session["step"] >= len(questions):
+        session.clear()
+        add_debug_log("All questions answered, session cleared")
+        return jsonify({"question": "All done! Your ticket has been sent to your email.", "done": True})
+
+    add_debug_log(f"Asking next question {step}: {questions[step]}")
     return jsonify({
-        "question": questions[idx],
+        "question": questions[step],
+        "question": questions[session['step']],
         "done": False,
-        "step": idx,
-        "answers_in_session": session["answers"]
+        "step": step,
+        "step": session['step'],
+        "answers": answers
     })
 
 @app.route("/debug", methods=["GET"])
 def debug():
-    return jsonify({
-        "current_index": session.get("current_index", 0),
+    debug_info = {
+        "step_in_session": session.get("step", 0),
         "answers_in_session": session.get("answers", []),
-        "debug_logs": DEBUG_LOGS[-50:]
-    })
+        "debug_logs": DEBUG_LOGS[-20:]  # last 20 logs
+    }
+    return jsonify(debug_info)
 
-# ---------------- Helper: Ticket PDF ----------------
+# ---------------- Helper Functions ----------------
 def generate_ticket(answers):
     pdf_filename = f"ticket_{uuid.uuid4().hex}.pdf"
     qa_map = {q: a for q, a in zip(questions, answers)}
@@ -152,7 +154,33 @@ def generate_ticket(answers):
     doc.build(story)
     return pdf_filename
 
+def email_ticket(receiver_email, pdf_file):
+    port = 465
+    smtp_server = "smtp.gmail.com"
+    sender_email = "tainoheritagecamp@gmail.com"
+    password = os.environ.get("EMAIL_PASS")
+
+    from email.message import EmailMessage
+    msg = EmailMessage()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = "Your Taino Heritage Camp Ticket"
+    msg.set_content("Hello! Thank you for booking with Taino Heritage Camp.\nPlease find your ticket attached.")
+
+    with open(pdf_file, 'rb') as f:
+        msg.add_attachment(f.read(), maintype='application', subtype='pdf', filename=os.path.basename(pdf_file))
+
+    context = ssl.create_default_context()
+    try:
+        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+            server.login(sender_email, password)
+            server.send_message(msg)
+        add_debug_log(f"Ticket sent to {receiver_email}")
+        return True
+    except smtplib.SMTPException as e:
+        add_debug_log(f"SMTP error: {e}")
+        return False
+
 # ---------------- Run App ----------------
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
