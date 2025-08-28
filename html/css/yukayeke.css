@@ -399,6 +399,20 @@ section p {
     transform: scale(1.1);
 }
 
+.video-container {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.video-container video {
+    width: 70%;
+    max-width: 900px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .yukayeke-container {

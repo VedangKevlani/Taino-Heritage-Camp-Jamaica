@@ -314,6 +314,20 @@ h1, h2, h3 {
     margin-top: 2rem;
 }
 
+.video-container {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.video-container video {
+    width: 70%;
+    max-width: 900px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
 /* .cta .btn-get-started-school,
 .cta .btn-learn-more-yukayeke {
     display: inline-block;
