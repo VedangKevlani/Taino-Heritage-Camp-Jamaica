@@ -52,28 +52,28 @@ const today = new Date();
 //   upcomingContainer.innerHTML = "";
 //   pastContainer.innerHTML = "";
 
-//   events.forEach((event, index) => {
-//     const eventDate = new Date(event.date);
-//     const card = document.createElement("div");
-//     card.classList.add("event-card");
+  // events.forEach((event, index) => {
+  //   const eventDate = new Date(event.date);
+  //   const card = document.createElement("div");
+  //   card.classList.add("event-card");
 
-//     card.innerHTML = `
-//       <img src="${event.image}" alt="${event.title}" loading="lazy">
-//       <div class="event-info">
-//         <h3>${event.title}</h3>
-//         <p class="date">${eventDate.toDateString()}</p>
-//         <p>${event.description}</p>
-//         <button class="btn-delete" data-index="${index}">Delete</button>
-//       </div>
-//     `;
+  //   card.innerHTML = `
+  //     <img src="${event.image}" alt="${event.title}" loading="lazy">
+  //     <div class="event-info">
+  //       <h3>${event.title}</h3>
+  //       <p class="date">${eventDate.toDateString()}</p>
+  //       <p>${event.description}</p>
+  //       <button class="btn-delete" data-index="${index}">Delete</button>
+  //     </div>
+  //   `;
 
-//     // Append to the correct container
-//     if (eventDate >= today) {
-//       upcomingContainer.appendChild(card);
-//     } else {
-//       pastContainer.appendChild(card);
-//     }
-//   });
+  //   // Append to the correct container
+  //   if (eventDate >= today) {
+  //     upcomingContainer.appendChild(card);
+  //   } else {
+  //     pastContainer.appendChild(card);
+  //   }
+  // });
 
 //   // Attach delete handlers
 //   document.querySelectorAll(".btn-delete").forEach(btn => {
@@ -163,6 +163,7 @@ function renderEvents() {
       </div>
     `;
 
+    // Append to the correct container
     if (eventDate >= today) {
       upcomingContainer.appendChild(card);
     } else {
