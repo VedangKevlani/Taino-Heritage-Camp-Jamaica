@@ -65,21 +65,25 @@ def reset_session():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    step = session.get("step", 0)
-    answers = session.get("answers", [])
+    # Initialize session if empty
+    if "current_index" not in session:
+        session["current_index"] = 0
+        session["answers"] = []
 
-    if step >= len(questions):
+    idx = session["current_index"]
+
+    if idx >= len(questions):
         return jsonify({
             "message": "All questions answered.",
             "done": True,
-            "answers": answers
+            "answers": session["answers"]
         })
 
     return jsonify({
-        "question": questions[step],
+        "question": questions[idx],
         "done": False,
-        "step": step,
-        "answers": answers
+        "step": idx,
+        "answers": session["answers"]
     })
 
 
@@ -88,32 +92,32 @@ def answer():
     data = request.get_json(force=True)
     user_answer = data.get("answer")
 
-    # Initialize session if new
-    if "answers" not in session:
-        session["answers"] = []
+    if "current_index" not in session:
         session["current_index"] = 0
+        session["answers"] = []
 
-    # Record answer if not first question
-    idx = session.get("current_index", 0)
-    if idx > 0:
+    idx = session["current_index"]
+
+    # Store answer for this step
+    if idx < len(questions):
         session["answers"].append(user_answer)
 
-    # Advance to next question
-    if idx < len(questions) - 1:
-        idx += 1
-        session["current_index"] = idx
-        session.modified = True
-        return jsonify({
-            "question": questions[idx],
-            "step": idx,
-            "answers_in_session": session["answers"]
-        })
-    else:
+    # Advance
+    session["current_index"] = idx + 1
+    session.modified = True
+
+    if session["current_index"] >= len(questions):
         return jsonify({
             "message": "All questions completed!",
             "answers": session["answers"]
         })
-
+    else:
+        next_idx = session["current_index"]
+        return jsonify({
+            "question": questions[next_idx],
+            "step": next_idx,
+            "answers_in_session": session["answers"]
+        })
 
 @app.route("/debug", methods=["GET"])
 def debug():
