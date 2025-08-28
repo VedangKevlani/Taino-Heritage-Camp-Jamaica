@@ -81,34 +81,74 @@ def reset_session():
 
 @app.route("/ask", methods=["GET"])
 def ask():
-    # If new session, start at question 0
-    if "index" not in session:
-        session["index"] = 0
-    idx = session["index"]
-    return jsonify({"question": questions[idx]})
+    # initialize session if missing
+    if "step" not in session or "answers" not in session:
+        session["step"] = 0
+        session["answers"] = []
+        add_debug_log("Initialized session keys")
+
+    step = int(session.get("step", 0))
+    answers = session.get("answers", [])
+
+    if step >= len(questions):
+        add_debug_log("Asked after completion")
+        return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
+
+    add_debug_log(f"Asking question {step}: {questions[step]}")
+    return jsonify({
+        "question": questions[step],
+        "done": False,
+        "step": step,
+        "answers": answers
+    })
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    data = request.json
-    if "answers" not in session:
+    data = request.get_json(force=True) or {}
+    user_answer = (data.get("answer") or "").strip()
+
+    if user_answer == "":
+        add_debug_log("Empty answer received")
+        return jsonify({"error": "empty_answer", "message": "Please provide a valid answer."}), 400
+
+    # ensure session initialized
+    if "step" not in session or "answers" not in session:
+        session["step"] = 0
         session["answers"] = []
 
-    # Store answer
-    session["answers"].append(data.get("answer", ""))
+    step = int(session.get("step", 0))
+    answers = session.get("answers", [])
+
+    # Save the answer for the current step (only if still within bounds)
+    if step < len(questions):
+        answers.append(user_answer)
+        session["answers"] = answers
+        add_debug_log(f"Answer recorded for step {step}: {user_answer}")
+    else:
+        add_debug_log(f"Answer received but step {step} >= questions length")
+
+    # Advance step (move to next question)
+    step = step + 1
+    session["step"] = step
     session.modified = True
 
-    # Move to next question
-    session["index"] += 1
-    idx = session["index"]
+    # If finished, return done
+    if step >= len(questions):
+        add_debug_log("All questions answered, finalizing and clearing session")
+        result = {"message": "All done! Thank you.", "done": True, "answers": session.get("answers", [])}
+        # optional: do not clear immediately if you want debug; here we leave answers but reset step
+        # session.clear()
+        return jsonify(result)
 
-    if idx >= len(questions):
-        return jsonify({"done": True, "answers": session["answers"]})
-
-    return jsonify({"question": questions[idx], "done": False})
-
-@app.route("/")
-def home():
-    return "Backend is running!"
+    # Otherwise return next question
+    next_question = questions[step]
+    add_debug_log(f"Asking next question {step}: {next_question}")
+    return jsonify({
+        "question": next_question,
+        "done": False,
+        "step": step,
+        "answers": session.get("answers", [])
+    })
 
 @app.route("/debug", methods=["GET"])
 def debug():
