@@ -548,7 +548,7 @@ li {
 /* Hide nav links by default on mobile */
 @media (max-width: 768px) {
     #nav-links {
-        display: none; /* hide links */
+        display: none; /* hidden by default */
         flex-direction: column;
         width: 100%;
         background: rgba(0,0,0,0.8);
@@ -557,9 +557,8 @@ li {
         margin-top: 0.5rem;
     }
 
-    /* Show links when active */
     #nav-links.active {
-        display: flex;
+        display: flex; /* show when active */
     }
 
     /* Hamburger button */
