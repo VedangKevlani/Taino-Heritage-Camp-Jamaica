@@ -1,5 +1,6 @@
 # backend/app.py
 from flask import Flask, request, jsonify, session, make_response
+import requests
 from flask_session import Session
 import os, tempfile, uuid, ssl, smtplib
 from dotenv import load_dotenv
