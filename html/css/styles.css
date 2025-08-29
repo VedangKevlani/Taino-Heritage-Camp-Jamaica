@@ -488,53 +488,68 @@ main {
     height: 500px;            /* keeps height fixed */
 }
 
-/* Small devices: tablets (max-width: 1024px) */
-@media (max-width: 1024px) {
-    main {
-        padding-left: 5%;
-    }
-    .content h1 {
-        font-size: 3rem;
-    }
-    .buttons {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    nav {
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-}
-
-/* Mobile devices (max-width: 768px) */
 @media (max-width: 768px) {
+
+    /* Show hamburger */
+    .hamburger {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: yellowgreen;
+        cursor: pointer;
+        margin-left: auto; /* optional: right-align */
+    }
+
+    /* Hide nav links by default */
+    #nav-links {
+        display: none;        /* hidden until hamburger clicked */
+        flex-direction: column;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+    }
+
+    /* Show nav when active */
+    #nav-links.active {
+        display: flex;
+    }
+
+    #nav-links a {
+        padding: 0.5rem 0;
+        font-size: 1.2rem;
+        color: yellowgreen;
+        text-align: center;
+    }
+
+    /* Stack header items */
     header {
         flex-direction: column;
         align-items: flex-start;
         padding: 0.5rem 1rem;
     }
-    nav {
-        flex-direction: column;
-        width: 100%;
-    }
-    nav a {
-        font-size: 1.1rem;
-        padding: 0.5rem 0;
-    }
+
+    /* Main content adjustments */
     .content {
         max-width: 90%;
         text-align: center;
         padding: 0;
     }
+
     .content h1 {
         font-size: 2.5rem;
     }
+
     .buttons {
         width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: 1rem;
     }
+
     .btn-get-started-school,
     .btn-learn-more-yukayeke {
         width: 80%;
@@ -542,56 +557,4 @@ main {
         font-size: 1.1rem;
         padding: 0.8rem 1rem;
     }
-}
-
-/* Extra small devices (max-width: 480px) */
-@media (max-width: 480px) {
-    .content h1 {
-        font-size: 2rem;
-    }
-    .btn-get-started-school,
-    .btn-learn-more-yukayeke {
-        width: 100%;
-    }
-    header h1 img {
-        width: 120px; /* resize logo */
-    }
-}
-
-/* Hide nav and show hamburger on small screens */
-@media (max-width: 768px) {
-    #nav-links {
-        display: none;         /* hide by default */
-        flex-direction: column;
-        width: 100%;
-        margin-top: 0.5rem;
-        background: rgba(0, 0, 0, 0.8); /* optional: dark background */
-        padding: 1rem;
-        border-radius: 8px;
-    }
-
-    #nav-links a {
-        padding: 0.5rem 0;
-        font-size: 1.2rem;
-        color: yellowgreen;
-    }
-
-    .hamburger {
-        display: block;        /* show hamburger */
-        background: none;
-        border: none;
-        font-size: 2rem;
-        color: yellowgreen;
-        cursor: pointer;
-    }
-
-    /* Hide the regular flex nav in mobile */
-    nav {
-        justify-content: flex-start; /* optional */
-    }
-}
-
-/* When active, show the nav */
-#nav-links.active {
-    display: flex;
 }
