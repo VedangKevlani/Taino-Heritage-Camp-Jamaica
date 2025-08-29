@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-const backendURL = "https://tainoheritagecamp.onrender.com"; 
+const backendURL = "https://taino-heritage-camp-jamaica.onrender.com"; 
 const openBtn = document.getElementById("openLightbox");
 const closeBtn = document.getElementById("closeLightbox");
 const lightbox = document.getElementById("lightbox");
