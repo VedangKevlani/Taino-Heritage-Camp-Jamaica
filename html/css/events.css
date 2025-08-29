@@ -465,3 +465,47 @@ nav a.active::after {
   margin: 5px 0;
 }
 
+.hamburger {
+  display: none;
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.5rem 1rem;
+        gap: 0.5rem;
+    }
+
+    /* Show hamburger only on mobile */
+    .hamburger {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: yellowgreen;
+        cursor: pointer;
+        margin-left: auto; /* optional: right-align */
+    }
+
+    nav {
+        display: none; /* hidden by default */
+        flex-direction: column;
+        width: 100%;
+        background: rgba(0,0,0,0.8);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+    }
+
+    nav.active {
+        display: flex;
+    }
+
+    nav a {
+        font-size: 1.2rem;
+        padding: 0.5rem 0;
+        text-align: center;
+        color: yellowgreen;
+    }
+}
