@@ -36,6 +36,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeBtn = document.getElementById("closeLightbox");
   const lightbox = document.getElementById("lightbox");
 
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+
+  hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+  });
+
   // --- Lightbox handlers ---
   openBtn.addEventListener("click", () => { lightbox.style.display = "flex"; });
   closeBtn.addEventListener("click", () => { lightbox.style.display = "none"; });

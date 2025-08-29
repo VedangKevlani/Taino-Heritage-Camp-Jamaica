@@ -540,3 +540,37 @@ li {
         width: 100%;
     }
 }
+
+/* Hide nav links by default on mobile */
+@media (max-width: 768px) {
+    #nav-links {
+        display: none; /* hide links */
+        flex-direction: column;
+        width: 100%;
+        background: rgba(0,0,0,0.8);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+    }
+
+    /* Show links when active */
+    #nav-links.active {
+        display: flex;
+    }
+
+    /* Hamburger button */
+    .hamburger {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: yellowgreen;
+        cursor: pointer;
+        margin-left: auto;
+    }
+
+    /* Hide socials button on small screens */
+    #openLightbox {
+        display: none;
+    }
+}
