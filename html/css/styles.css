@@ -371,7 +371,7 @@ main {
     transition: all 0.3s ease;
 }
 
-.description h2 {
+.description {
     font-size: 2rem;
     color: #7CFC00; /* light green highlight */
     margin-bottom: 1rem;
@@ -494,7 +494,15 @@ main {
 
 @media (max-width: 768px) {
 
-    /* Show hamburger */
+    /* Header layout */
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.5rem 1rem;
+        gap: 0.5rem;
+    }
+
+    /* Show hamburger only on mobile */
     .hamburger {
         display: block;
         background: none;
@@ -516,7 +524,7 @@ main {
         margin-top: 0.5rem;
     }
 
-    /* Show nav when active */
+    /* Show nav when active class is added */
     #nav-links.active {
         display: flex;
     }
@@ -528,11 +536,9 @@ main {
         text-align: center;
     }
 
-    /* Stack header items */
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 0.5rem 1rem;
+    /* Hide the Socials button */
+    #openLightbox {
+        display: none;
     }
 
     /* Main content adjustments */
@@ -546,6 +552,7 @@ main {
         font-size: 2.5rem;
     }
 
+    /* Buttons stacked vertically */
     .buttons {
         width: 100%;
         display: flex;
@@ -560,10 +567,5 @@ main {
         text-align: center;
         font-size: 1.1rem;
         padding: 0.8rem 1rem;
-    }
-
-     /* Hide Socials button on small screens */
-    #openLightbox {
-        display: none;
     }
 }
