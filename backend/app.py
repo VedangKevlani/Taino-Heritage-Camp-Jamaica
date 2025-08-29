@@ -403,11 +403,10 @@ def send_ticket_confirmation(answers, logo_path=None):
 def get_route():
     start = request.args.get("start")  # "lat,lng"
     end = request.args.get("end")
-    if not start or not end:
-        return jsonify({"error": "Missing start or end"}), 400
+    api_key = os.getenv("GRAPHHOPPER_API_KEY")
     url = f"https://graphhopper.com/api/1/route?point={start}&point={end}&vehicle=car&locale=en&key={api_key}"
-    r = requests.get(url)
-    return jsonify(r.json())
+    response = requests.get(url)
+    return jsonify(response.json())
 
 # ---------------- Run (local) ----------------
 if __name__ == "__main__":
