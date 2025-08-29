@@ -506,6 +506,10 @@ li {
     }
 }
 
+.hamburger {
+    display: none;
+}
+
 /* Extra small devices (max-width: 480px) */
 @media (max-width: 480px) {
     header h1 img {
@@ -518,6 +522,17 @@ li {
 
     .hero-text p {
         font-size: 1rem;
+    }
+
+    /* Show hamburger only on mobile */
+    .hamburger {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: yellowgreen;
+        cursor: pointer;
+        margin-left: auto; /* optional: right-align */
     }
 
     .buttons .btn-get-started-school,
