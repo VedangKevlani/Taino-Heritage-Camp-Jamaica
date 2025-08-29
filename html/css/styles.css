@@ -488,3 +488,74 @@ main {
     height: 500px;            /* keeps height fixed */
 }
 
+/* Small devices: tablets (max-width: 1024px) */
+@media (max-width: 1024px) {
+    main {
+        padding-left: 5%;
+    }
+    .content h1 {
+        font-size: 3rem;
+    }
+    .buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    nav {
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+}
+
+/* Mobile devices (max-width: 768px) */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.5rem 1rem;
+    }
+    nav {
+        flex-direction: column;
+        width: 100%;
+    }
+    nav a {
+        font-size: 1.1rem;
+        padding: 0.5rem 0;
+    }
+    .content {
+        max-width: 90%;
+        text-align: center;
+        padding: 0;
+    }
+    .content h1 {
+        font-size: 2.5rem;
+    }
+    .buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .btn-get-started-school,
+    .btn-learn-more-yukayeke {
+        width: 80%;
+        text-align: center;
+        font-size: 1.1rem;
+        padding: 0.8rem 1rem;
+    }
+}
+
+/* Extra small devices (max-width: 480px) */
+@media (max-width: 480px) {
+    .content h1 {
+        font-size: 2rem;
+    }
+    .btn-get-started-school,
+    .btn-learn-more-yukayeke {
+        width: 100%;
+    }
+    header h1 img {
+        width: 120px; /* resize logo */
+    }
+}
+
+
