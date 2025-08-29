@@ -309,9 +309,52 @@ h1, h2, h3 {
     box-shadow: 0 8px 20px rgba(0, 200, 0, 0.6);
 }
 
+/* Default: buttons side by side */
 .cta {
-    text-align: center;
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
     margin-top: 2rem;
+}
+
+/* Buttons style */
+.cta .buttons {
+    text-decoration: none;
+    border: none;
+    background: linear-gradient(90deg, yellowgreen, limegreen);
+    color: black;
+    padding: 0.9rem 1.6rem;
+    border-radius: 50px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.08rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
+    text-align: center;
+}
+
+/* Hover effect */
+.cta .buttons:hover {
+    background: linear-gradient(90deg, green, darkgreen);
+    color: white;
+    transform: scale(1.08);
+    box-shadow: 0 8px 20px rgba(0, 200, 0, 0.6);
+}
+
+/* Small screens: stack buttons vertically */
+@media (max-width: 480px) {
+    .cta {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .cta .buttons {
+        width: 100%;       /* full width on mobile */
+        max-width: 300px;  /* optional: limit max width */
+        font-size: 1.1rem; /* slightly smaller text */
+        padding: 0.8rem 1rem;
+    }
 }
 
 .video-container {
