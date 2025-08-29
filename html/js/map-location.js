@@ -1,4 +1,5 @@
-const openBtn = document.getElementById("openLightbox");
+document.addEventListener("DOMContentLoaded", () => {
+  const openBtn = document.getElementById("openLightbox");
 const closeBtn = document.getElementById("closeLightbox");
 const lightbox = document.getElementById("lightbox");
 const hamburger = document.getElementById('hamburger');
@@ -60,3 +61,4 @@ fetch(`/route?start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`)
     }
   })
   .catch(err => console.error("Error fetching route:", err));
+});

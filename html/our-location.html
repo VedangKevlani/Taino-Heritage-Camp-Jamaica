@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taino Heritage Camp</title>
     <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-<script src="https://unpkg.com/lrm-graphhopper/dist/lrm-graphhopper.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<favicon href="images/Taino_Heritage_Camps.png" type="image/png">
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <link rel="icon" href="images/Taino_Heritage_Camps.png" type="image/png">
 </head>
 <body>
     <header>
@@ -29,9 +28,14 @@
     <h3>
 The access road to the camp is a farm road, like all naturally beautiful locations in Jamaica the road to the camp is rough, please be mindful of your speed and safety on the road.</h3>
 </div>
-  <div class="map-container">
+<div class="map-header">
+  <h1>Taino Heritage Camp Route</h1>
+  <h3>From Ocho Rios to Eden Hill</h3>
+</div>
+
+<div class="map-container">
     <div id="map"></div>
-    </div>
+</div>
 
   <div class="lightbox" id="lightbox">
     <div class="lightbox-content">
@@ -40,10 +44,10 @@ The access road to the camp is a farm road, like all naturally beautiful locatio
       <img class="social-icon" src="images/facebook.png"><a href="https://facebook.com/tainoheritagecamp/" target="_blank">Facebook</a>
     <button class="close-btn" id="closeLightbox">Close</button>
   </div>
-<script src="js/map-location.js">
 </script>
 <footer>
     <p>&copy; 2025 Taino Heritage Camp. All Rights Reserved.</p>
 </footer>
+<script src="js/map-location.js"></script>
 </body>
 </html>
