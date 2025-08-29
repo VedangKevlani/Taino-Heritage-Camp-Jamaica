@@ -558,27 +558,40 @@ main {
     }
 }
 
-/* Hide nav by default on mobile */
+/* Hide nav and show hamburger on small screens */
 @media (max-width: 768px) {
     #nav-links {
-        display: none;
+        display: none;         /* hide by default */
         flex-direction: column;
         width: 100%;
         margin-top: 0.5rem;
+        background: rgba(0, 0, 0, 0.8); /* optional: dark background */
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    #nav-links a {
+        padding: 0.5rem 0;
+        font-size: 1.2rem;
+        color: yellowgreen;
     }
 
     .hamburger {
-        display: block;
+        display: block;        /* show hamburger */
         background: none;
         border: none;
         font-size: 2rem;
         color: yellowgreen;
         cursor: pointer;
     }
+
+    /* Hide the regular flex nav in mobile */
+    nav {
+        justify-content: flex-start; /* optional */
+    }
 }
 
-/* Show nav when active */
+/* When active, show the nav */
 #nav-links.active {
     display: flex;
 }
-
