@@ -1,5 +1,4 @@
 // --- events.js ---
-
 const events = [
   {
     title: "Taino Drumming Workshop",
@@ -21,7 +20,7 @@ const events = [
   }
 ];
 
-let isAdmin = false; // Flag to track admin access
+let isAdmin = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   const upcomingContainer = document.getElementById("upcoming-events");
@@ -32,55 +31,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const today = new Date();
 
+  // Hamburger
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+  }
+
+  // Lightbox
   const openBtn = document.getElementById("openLightbox");
   const closeBtn = document.getElementById("closeLightbox");
   const lightbox = document.getElementById("lightbox");
 
-  const hamburger = document.getElementById('hamburger');
-  const navLinks = document.getElementById('nav-links');
+  if (openBtn && closeBtn && lightbox) {
+    openBtn.addEventListener("click", () => { lightbox.style.display = "flex"; });
+    closeBtn.addEventListener("click", () => { lightbox.style.display = "none"; });
+    lightbox.addEventListener("click", e => {
+      if (e.target === lightbox) lightbox.style.display = "none";
+    });
+  }
 
-  hamburger.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-  });
-
-  // --- Lightbox handlers ---
-  openBtn.addEventListener("click", () => { lightbox.style.display = "flex"; });
-  closeBtn.addEventListener("click", () => { lightbox.style.display = "none"; });
-  lightbox.addEventListener("click", e => {
-    if (e.target === lightbox) lightbox.style.display = "none";
-  });
-
-  // --- Admin password handling ---
+  // --- Admin Password ---
   const adminPassword = "C0k1Yuka600";
-  adminSection.style.display = "none"; // hide by default
 
   function requestAdminAccess() {
     const pwd = prompt("Enter admin password to manage events:");
     if (pwd === adminPassword) {
-      adminSection.style.display = "block";
       isAdmin = true;
+      adminSection.style.display = "block";
       msg.textContent = "Admin access granted.";
     } else {
-      adminSection.style.display = "none";
       isAdmin = false;
+      adminSection.style.display = "none";
+      msg.textContent = "";
       alert("Incorrect password. Admin features disabled.");
     }
   }
 
-  // --- Load events from localStorage ---
+  if (adminSection) adminSection.style.display = "none";
+
+  requestAdminAccess(); // ask for admin right away
+
+  // Load events from localStorage
   const savedEvents = localStorage.getItem("events");
   if (savedEvents) {
-    events.length = 0; // clear default events first
+    events.length = 0;
     events.push(...JSON.parse(savedEvents));
   }
 
-  // --- Save events to localStorage ---
   function saveEvents() {
     localStorage.setItem("events", JSON.stringify(events));
   }
 
-  // --- Render events ---
   function renderEvents() {
+    if (!upcomingContainer || !pastContainer) return;
+
     upcomingContainer.innerHTML = "";
     pastContainer.innerHTML = "";
 
@@ -95,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h3>${event.title}</h3>
           <p class="date">${eventDate.toDateString()}</p>
           <p>${event.description}</p>
-          <button class="btn-delete" data-index="${index}">Delete</button>
+          ${isAdmin ? `<button class="btn-delete" data-index="${index}">Delete</button>` : ""}
         </div>
       `;
 
@@ -106,13 +113,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Delete button handlers
+    // Delete buttons
     document.querySelectorAll(".btn-delete").forEach(btn => {
       btn.addEventListener("click", () => {
-        if (!isAdmin) {
-          alert("Only admins can delete events!");
-          return;
-        }
+        if (!isAdmin) return alert("Only admins can delete events!");
         const idx = btn.dataset.index;
         events.splice(idx, 1);
         saveEvents();
@@ -121,41 +125,38 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Handle new event creation ---
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-
-    if (!isAdmin) {
-      alert("Only admins can add events!");
-      return;
-    }
-
-    const title = document.getElementById("event-title").value.trim();
-    const date = document.getElementById("event-date").value;
-    const description = document.getElementById("event-description").value.trim();
-    const fileInput = document.getElementById("event-image-file");
-    const file = fileInput.files[0];
-
-    if (!title || !date || !description || !file) {
-      msg.textContent = "Please fill out all fields!";
-      msg.classList.add("error");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const imageSrc = event.target.result;
-      events.push({ title, date, description, image: imageSrc });
-      saveEvents();
-      renderEvents();
-      form.reset();
-      msg.textContent = "Event added successfully!";
-      msg.classList.remove("error");
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // --- Initialize ---
   renderEvents();
-  requestAdminAccess();
+
+  // --- Add new event ---
+  if (form) {
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+
+      if (!isAdmin) return alert("Only admins can add events!");
+
+      const title = document.getElementById("event-title").value.trim();
+      const date = document.getElementById("event-date").value;
+      const description = document.getElementById("event-description").value.trim();
+      const fileInput = document.getElementById("event-image-file");
+      const file = fileInput.files[0];
+
+      if (!title || !date || !description || !file) {
+        msg.textContent = "Please fill out all fields!";
+        msg.classList.add("error");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imageSrc = event.target.result;
+        events.push({ title, date, description, image: imageSrc });
+        saveEvents();
+        renderEvents();
+        form.reset();
+        msg.textContent = "Event added successfully!";
+        msg.classList.remove("error");
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 });
