@@ -410,6 +410,10 @@ li {
     }
 }
 
+.hamburger {
+    display: none;
+}
+
 /* Mobile devices (max-width: 768px) */
 @media (max-width: 768px) {
     /* Header layout */
