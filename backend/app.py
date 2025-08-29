@@ -11,7 +11,7 @@ from email.message import EmailMessage
 import mimetypes
 import logging
 
-api_key = os.getenv("GRAPHHOPPER_API_KEY")
+
 logger = logging.getLogger(__name__)
 
 load_dotenv()
@@ -21,7 +21,7 @@ app = Flask(__name__)
 # ---------------- CONFIG ----------------
 # Secret (set in Render env var SECRET_KEY in production)
 app.secret_key = os.getenv("SECRET_KEY", "dev_local_secret_please_change")
-
+app.api_key = os.getenv("GRAPHHOPPER_API_KEY")
 # Session backend (filesystem for now; change to redis for multi-instance)
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_FILE_DIR"] = tempfile.gettempdir()
@@ -399,14 +399,18 @@ def send_ticket_confirmation(answers, logo_path=None):
         logger.exception("send_ticket_confirmation failed: %s", exc)
         return None, False
 
-@app.route("/route")
+@app.route("/route", methods=["GET"])
 def get_route():
-    start = request.args.get("start")  # "lat,lng"
-    end = request.args.get("end")
-    api_key = os.getenv("GRAPHHOPPER_API_KEY")
-    url = f"https://graphhopper.com/api/1/route?point={start}&point={end}&vehicle=car&locale=en&key={api_key}"
-    response = requests.get(url)
-    return jsonify(response.json())
+    start = request.args.get("start")  # e.g., "lat,lng"
+    end = request.args.get("end")      # e.g., "lat,lng"
+    
+    if not start or not end:
+        return jsonify({"error": "start and end parameters required"}), 400
+    
+    # Use the app.api_key here
+    url = f"https://graphhopper.com/api/1/route?point={start}&point={end}&vehicle=car&locale=en&key={app.api_key}"
+    r = requests.get(url)
+    return jsonify(r.json())
 
 # ---------------- Run (local) ----------------
 if __name__ == "__main__":
