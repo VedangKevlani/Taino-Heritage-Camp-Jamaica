@@ -488,6 +488,10 @@ main {
     height: 500px;            /* keeps height fixed */
 }
 
+.hamburger {
+    display: none;
+}
+
 @media (max-width: 768px) {
 
     /* Show hamburger */
@@ -556,5 +560,10 @@ main {
         text-align: center;
         font-size: 1.1rem;
         padding: 0.8rem 1rem;
+    }
+
+     /* Hide Socials button on small screens */
+    #openLightbox {
+        display: none;
     }
 }
