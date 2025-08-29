@@ -6,12 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('nav-links');
 
-  let coords = []; // route coordinates
-  let userMarker = null;
-  let nearestPointMarker = null;
-  let completedPolyline = null;
-  let remainingPolyline = null;
-
   const userIcon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -22,101 +16,122 @@ document.addEventListener("DOMContentLoaded", () => {
     shadowSize: [41, 41]
   });
 
-  hamburger.addEventListener('click', () => navLinks.classList.toggle('active'));
+  // Hamburger menu toggle
+  hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+  });
+
+  // Lightbox
   openBtn.addEventListener("click", () => lightbox.style.display = "flex");
   closeBtn.addEventListener("click", () => lightbox.style.display = "none");
   lightbox.addEventListener("click", (e) => { if (e.target === lightbox) lightbox.style.display = "none"; });
 
-  // Function to find nearest point on route
+  // Initialize map at some default location first
+  const map = L.map('map').setView([18.4074, -77.1031], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let coords = null;
+  let userMarker = null;
+  let nearestPointMarker = null;
+  let completedPolyline = null;
+  let remainingPolyline = null;
+
   function findNearestPoint(latlng, routeCoords) {
     let minDist = Infinity;
     let nearest = null;
     routeCoords.forEach(pt => {
-      const dist = map.distance(latlng, pt);
-      if (dist < minDist) { minDist = dist; nearest = pt; }
+      const dist = L.latLng(latlng).distanceTo(L.latLng(pt));
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = pt;
+      }
     });
     return nearest;
   }
 
   function updateRouteProgress(userLatLng) {
-    if (!coords.length) return;
+    if (!coords) return;
     let minDist = Infinity;
     let nearestIndex = 0;
     coords.forEach((pt, i) => {
-      const dist = map.distance(userLatLng, pt);
-      if (dist < minDist) { minDist = dist; nearestIndex = i; }
+      const dist = L.latLng(userLatLng).distanceTo(L.latLng(pt));
+      if (dist < minDist) {
+        minDist = dist;
+        nearestIndex = i;
+      }
     });
+
     const completedCoords = coords.slice(0, nearestIndex + 1);
-    const remainingCoordsArr = coords.slice(nearestIndex);
+    const remainingCoords = coords.slice(nearestIndex);
+
     if (completedPolyline) map.removeLayer(completedPolyline);
     if (remainingPolyline) map.removeLayer(remainingPolyline);
+
     completedPolyline = L.polyline(completedCoords, { color: 'green', weight: 4 }).addTo(map);
-    remainingPolyline = L.polyline(remainingCoordsArr, { color: 'blue', weight: 4 }).addTo(map);
+    remainingPolyline = L.polyline(remainingCoords, { color: 'blue', weight: 4 }).addTo(map);
   }
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const userLatLng = [pos.coords.latitude, pos.coords.longitude];
+  function startTrackingRoute() {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported by your browser.");
+      return;
+    }
 
-        // Initialize map at user's location
-        const map = L.map('map').setView(userLatLng, 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+    navigator.geolocation.getCurrentPosition(pos => {
+      const userLatLng = [pos.coords.latitude, pos.coords.longitude];
+      map.setView(userLatLng, 14);
 
-        // Start & end points (you can still use fixed end or dynamic)
-        const end = [18.384744, -76.938089];
-        L.marker(userLatLng, { icon: userIcon }).addTo(map).bindPopup("Start: You are here").openPopup();
-        L.marker(end).addTo(map).bindPopup("End");
+      // Place initial user marker
+      userMarker = L.marker(userLatLng, { icon: userIcon }).addTo(map).bindPopup("You are here").openPopup();
 
-        // Fetch route from backend
-        fetch(`${backendURL}/route?start=${userLatLng[0]},${userLatLng[1]}&end=${end[0]},${end[1]}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.paths && data.paths.length > 0) {
-              coords = polyline.decode(data.paths[0].points, 5);
+      // Fetch route starting from user location
+      fetch(`${backendURL}/route?start=${userLatLng[0]},${userLatLng[1]}&end=18.384744,-76.938089`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.paths && data.paths.length > 0) {
+            coords = polyline.decode(data.paths[0].points, 5);
 
-              const routeLine = L.polyline(coords, { color: 'blue', weight: 4 }).addTo(map);
-              map.fitBounds(routeLine.getBounds());
+            // Start & end markers
+            L.marker(coords[0]).addTo(map).bindPopup("Start");
+            L.marker(coords[coords.length-1]).addTo(map).bindPopup("End");
 
-              // Optional pins every 20 points
-              coords.forEach((c, i) => {
-                if (i % 20 === 0) {
-                  L.circleMarker(c, { radius: 3, color: 'red', fillColor: '#f03', fillOpacity: 0.7 }).addTo(map);
-                }
-              });
+            // Draw full route
+            remainingPolyline = L.polyline(coords, { color: 'blue', weight: 4 }).addTo(map);
+            map.fitBounds(remainingPolyline.getBounds());
 
-              // Draw remaining route
-              remainingPolyline = L.polyline(coords, { color: 'blue', weight: 4 }).addTo(map);
-            }
-          })
-          .catch(err => console.error("Error fetching route:", err));
+            // Optional small pins along the route
+            coords.forEach((c, i) => {
+              if (i % 20 === 0) {
+                L.circleMarker(c, { radius: 3, color: 'red', fillColor: '#f03', fillOpacity: 0.7 }).addTo(map);
+              }
+            });
 
-        // Start watching user position
-        navigator.geolocation.watchPosition(
-          pos => {
-            const userLatLng = [pos.coords.latitude, pos.coords.longitude];
-            if (!userMarker) {
-              userMarker = L.marker(userLatLng, { icon: userIcon }).addTo(map).bindPopup("You are here").openPopup();
-            } else userMarker.setLatLng(userLatLng);
+            // Start watching user position continuously
+            navigator.geolocation.watchPosition(pos => {
+              const userLatLng = [pos.coords.latitude, pos.coords.longitude];
+              userMarker.setLatLng(userLatLng);
 
-            const nearest = findNearestPoint(userLatLng, coords);
-            if (!nearestPointMarker) {
-              nearestPointMarker = L.circleMarker(nearest, { radius: 6, color: 'green', fillColor: 'lime', fillOpacity: 0.8 }).addTo(map);
-            } else nearestPointMarker.setLatLng(nearest);
+              const nearest = findNearestPoint(userLatLng, coords);
+              if (!nearestPointMarker) {
+                nearestPointMarker = L.circleMarker(nearest, { radius: 6, color: 'green', fillColor: 'lime', fillOpacity: 0.8 }).addTo(map);
+              } else {
+                nearestPointMarker.setLatLng(nearest);
+              }
 
-            updateRouteProgress(userLatLng);
-            map.setView(userLatLng, 14);
-          },
-          err => console.error("Geolocation error:", err),
-          { enableHighAccuracy: true, maximumAge: 1000 }
-        );
-      },
-      err => console.error("Initial geolocation error:", err),
-      { enableHighAccuracy: true }
-    );
-  } else {
-    alert("Geolocation not supported by your browser.");
+              updateRouteProgress(userLatLng);
+              map.setView(userLatLng, 14);
+
+            }, err => console.error("Geolocation error:", err), { enableHighAccuracy: true, maximumAge: 1000 });
+          } else {
+            alert("No route found.");
+          }
+        })
+        .catch(err => console.error("Error fetching route:", err));
+
+    }, err => console.error("Initial geolocation error:", err), { enableHighAccuracy: true });
   }
+
+  startTrackingRoute();
 });
