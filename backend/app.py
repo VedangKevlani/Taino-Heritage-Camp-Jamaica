@@ -11,6 +11,7 @@ from email.message import EmailMessage
 import mimetypes
 import logging
 
+api_key = os.getenv("GRAPHHOPPER_API_KEY")
 logger = logging.getLogger(__name__)
 
 load_dotenv()
@@ -397,6 +398,15 @@ def send_ticket_confirmation(answers, logo_path=None):
     except Exception as exc:
         logger.exception("send_ticket_confirmation failed: %s", exc)
         return None, False
+
+# ---------------- MAP routing ---------------------
+@app.route("/route")
+def get_route():
+    start = request.args.get("start")  # "lat,lng"
+    end = request.args.get("end")
+    url = f"https://graphhopper.com/api/1/route?point={start}&point={end}&vehicle=car&locale=en&key={api_key}"
+    r = requests.get(url)
+    return jsonify(r.json())
 
 # ---------------- Run (local) ----------------
 if __name__ == "__main__":

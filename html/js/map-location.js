@@ -23,37 +23,40 @@ const navLinks = document.getElementById('nav-links');
       }
     });
 
-// Initialize map centered between start and destination
-const map = L.map('map').setView([18.4035, -77.0265], 12);
+ // Initialize map
+  const map = L.map('map').setView([18.4074, -77.1031], 12);
 
-// OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+  }).addTo(map);
 
-// Park marker
-const parkIcon = L.icon({
-    iconUrl: '../images/Taino Heritage Camps logo.jpg', // Replace with your marker image
-    iconSize: [30, 30]
-});
-L.marker([18.384744, -76.938089], {icon: parkIcon})
-    .addTo(map)
-    .bindPopup("<b>Taino Heritage Camp</b><br>Eden Hill, Oracabessa");
+  // Example start & end coordinates
+  const start = [18.4035,  -77.0265];   
+  const end   = [18.384744, -76.938089];   
 
-// Routing control
-L.Routing.control({
-    waypoints: [
-        L.latLng(18.4074, -77.1031),   // Start: Ocho Rios Bypass
-        L.latLng(18.384744, -76.938089)     // End: Eden Hill, Oracabessa
-    ],
-    routeWhileDragging: false,
-    lineOptions: {
-        styles: [{color: 'yellowgreen', weight: 6}]
-    },
-    createMarker: function(i, wp) {
-        let label = i === 0 ? "Start: Ocho Rios" : "Destination: Taino Heritage Camp";
-        return L.marker(wp.latLng).bindPopup(label);
-    },
-    addWaypoints: false,
-    position: 'bottomleft'
-}).addTo(map);
+  // Add markers
+  L.marker(start).addTo(map).bindPopup("Start");
+  L.marker(end).addTo(map).bindPopup("End");
+
+  // Fetch route from Flask backend
+  fetch(`/route?start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+
+      if (data.paths && data.paths.length > 0) {
+        const points = data.paths[0].points;
+        const coords = points.coordinates.map(coord => [coord[1], coord[0]]); 
+        // Flip [lng, lat] → [lat, lng] for Leaflet
+
+        // Draw polyline
+        L.polyline(coords, {color: 'blue', weight: 4}).addTo(map);
+
+        // Fit map bounds
+        map.fitBounds(coords);
+      } else {
+        alert("No route found.");
+      }
+    })
+    .catch(err => console.error(err));
