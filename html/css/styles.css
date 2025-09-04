@@ -119,7 +119,7 @@ body {
 header {
     /* position: sticky; */
     top: 0;
-    z-index: 1000;
+    z-index: 2000;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -484,12 +484,15 @@ main {
 }
 
 #map {
+    z-index: 100;
     width: 100%;              /* fills container width */
     height: 500px;            /* keeps height fixed */
 }
 
 .hamburger {
     display: none;
+    position: relative;
+    z-index: 2001;
 }
 
 @media (max-width: 768px) {
@@ -522,6 +525,7 @@ main {
         background: rgba(0, 0, 0, 0.8);
         padding: 1rem;
         border-radius: 8px;
+        z-index: 2000;
         margin-top: 0.5rem;
     }
 
