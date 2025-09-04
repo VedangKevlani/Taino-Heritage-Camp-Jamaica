@@ -492,6 +492,14 @@ li {
         gap: 0.5rem;
     }
 
+    #openLightbox {
+        display: block;           /* make it visible */
+        font-size: 1.5rem;        /* scale down if needed */
+        padding: 0.5rem 1rem;
+        margin: 1rem auto;        /* center horizontally */
+        text-align: center;
+    }
+
     /* Show hamburger */
     .hamburger {
         display: block;
@@ -519,11 +527,6 @@ li {
         padding: 0.5rem 0;
         text-align: center;
         color: yellowgreen;
-    }
-
-    /* Hide socials button */
-    #openLightbox {
-        display: none;
     }
 
     /* Stack CTA buttons */

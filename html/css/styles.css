@@ -541,9 +541,12 @@ main {
         text-align: center;
     }
 
-    /* Hide the Socials button */
     #openLightbox {
-        display: none;
+        display: block;           /* make it visible */
+        font-size: 1.5rem;        /* scale down if needed */
+        padding: 0.5rem 1rem;
+        margin: 1rem auto;        /* center horizontally */
+        text-align: center;
     }
 
     /* Main content adjustments */
