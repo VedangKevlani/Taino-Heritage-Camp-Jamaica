@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const lightbox = document.getElementById("lightbox");
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('nav-links');
+  const startRouteBtn = document.getElementById('startRouteBtn');
 
   const userIcon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -133,5 +134,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, err => console.error("Initial geolocation error:", err), { enableHighAccuracy: true });
   }
 
-  startTrackingRoute();
+  //startTrackingRoute();
+  startRouteBtn.addEventListener('click', () => {
+      startTrackingRoute();
+  });
 });
