@@ -321,47 +321,50 @@ def generate_ticket_pdf_canvas(answers, logo_path="html/images/Taino_Heritage_Ca
         add_debug_log(f"PDF generation error: {exc}")
 
 def email_ticket_multi(recipients, pdf_file, subject="Your Taino Heritage Camp Ticket", body="Thank you for booking with Taino Heritage Camp. See attached ticket."):
-    """
-    Send the given pdf_file to the list of recipients.
-    recipients: list of email addresses
-    """
     try:
-        port = 465
-        smtp_server = "smtp.gmail.com"
-        sender_email = "tainoheritagecamp@gmail.com"
-        password = os.getenv("EMAIL_PASS")  # must be set
+        api_key = os.getenv("SENDGRID_API_KEY")
+        if not api_key:
+            add_debug_log("SENDGRID_API_KEY env var not set; cannot send email")
+            raise RuntimeError("SENDGRID_API_KEY not set")
 
-        if not password:
-            add_debug_log("EMAIL_PASS env var not set; cannot send email")
-            raise RuntimeError("EMAIL_PASS not set")
+        import base64
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
 
-        # build message
-        msg = EmailMessage()
-        msg["From"] = sender_email
-        msg["To"] = ", ".join(recipients)
-        msg["Subject"] = subject
-        msg.set_content(body)
-
-        # attach PDF
+        # read PDF and encode
         with open(pdf_file, "rb") as f:
-            data = f.read()
-            maintype, subtype = ("application", "pdf")
-            msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=os.path.basename(pdf_file))
+            encoded_file = base64.b64encode(f.read()).decode()
 
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-            server.login(sender_email, password)
-            # send to all recipients explicitly
-            server.send_message(msg, from_addr=sender_email, to_addrs=recipients)
+        # create email
+        message = Mail(
+            from_email="tainoheritagecamp@gmail.com",  # the email to be verified
+            to_emails=recipients,
+            subject=subject,
+            plain_text_content=body
+        )
 
-        add_debug_log(f"Sent ticket to: {recipients}")
+        attachment = Attachment(
+            FileContent(encoded_file),
+            FileName(os.path.basename(pdf_file)),
+            FileType("application/pdf"),
+            Disposition("attachment")
+        )
+        message.attachment = attachment
+
+        sg = SendGridAPIClient(api_key)
+        response = sg.send(message)
+        add_debug_log(f"Sent ticket via SendGrid to: {recipients}, status {response.status_code}")
         return True
 
     except Exception as e:
-        logger.exception("Failed to send email: %s", e)
-        add_debug_log(f"Email error: {e}")
+        # catch verification errors or any SendGrid errors
+        if "The from address does not match a verified Sender Identity" in str(e):
+            add_debug_log("Sender email not verified yet. Waiting for verification.")
+        else:
+            logger.exception("Failed to send email via SendGrid: %s", e)
+            add_debug_log(f"Email error: {e}")
         return False
-    
+
 def send_ticket_confirmation(answers, logo_path=None):
     """
     Convenience wrapper:
