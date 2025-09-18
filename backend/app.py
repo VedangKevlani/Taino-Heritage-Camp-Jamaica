@@ -158,16 +158,36 @@ def answer():
     session.modified = True
 
     # Completed flow
+    # Completed flow
     if step >= len(questions):
         add_debug_log("All questions answered; returning done")
         pdf_file, success = send_ticket_confirmation(answers)
-    
+
+        # If PDF generation failed
+        if not pdf_file:
+            add_debug_log("PDF generation failed; aborting email send.")
+            return jsonify({
+                "message": "All done! But ticket generation failed on the server. Check backend logs.",
+                "done": True,
+                "answers": answers
+            })
+
+        # If the email wasn't sent (unverified sender or SendGrid error), do not return 500.
         if not success:
-            add_debug_log("Failed to send ticket to guest or host")
-            return jsonify({"error": "ticket_error", "message": "Ticket generation or email failed."}), 500
-        
-        add_debug_log(f"Ticket successfully sent; PDF: {pdf_file}")
-        return jsonify({"message": "All done! Your ticket has been emailed.", "done": True, "answers": answers})
+            add_debug_log("Ticket PDF generated but email not sent (sender unverified or SendGrid error).")
+            return jsonify({
+                "message": "All done! Ticket PDF generated, but email was NOT sent. Owner must verify sender in SendGrid or check server logs.",
+                "done": True,
+                "answers": answers
+            })
+
+    add_debug_log(f"Ticket successfully sent; PDF: {pdf_file}")
+    return jsonify({
+        "message": "All done! Your ticket has been emailed.",
+        "done": True,
+        "answers": answers
+    })
+
 
     # Otherwise return next question (safe index)
     next_q = questions[step]
