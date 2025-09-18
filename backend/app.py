@@ -328,7 +328,7 @@ def email_ticket_multi(recipients, pdf_file, subject="Your Taino Heritage Camp T
     try:
         port = 465
         smtp_server = "smtp.gmail.com"
-        sender_email = "vibranzmagazine@gmail.com"
+        sender_email = "tainoheritagecamp@gmail.com"
         password = os.getenv("EMAIL_PASS")  # must be set
 
         if not password:
