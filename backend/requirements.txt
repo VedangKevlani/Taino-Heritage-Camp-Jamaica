@@ -3,6 +3,7 @@ gunicorn
 python-dotenv
 Flask-Session
 Flask-Cors
+sendgrid>=6.9.0
 reportlab
 requests
 qrcode
