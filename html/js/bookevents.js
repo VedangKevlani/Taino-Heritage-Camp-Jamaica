@@ -32,6 +32,7 @@ function addMessage(sender, text, clearPrevious=false) {
 }
 
 // ---------------- Load First Question ----------------
+// Load first question (robust)
 async function loadQuestion() {
     try {
         const res = await fetch("https://taino-heritage-camp-jamaica.onrender.com/ask", {
@@ -40,16 +41,21 @@ async function loadQuestion() {
             credentials: "include",
         });
         const data = await res.json();
-        addMessage("agent", data.question, true);
-        input.disabled = false;
-        input.focus();
+        console.log("ask response:", data);
+        if (data.done) {
+            addMessage("agent", data.message || data.question || "All done.", true);
+        } else {
+            addMessage("agent", data.question || "Unexpected server response", true);
+            input.disabled = false;
+            input.focus();
+        }
     } catch (err) {
         addMessage("agent", "Error: Could not reach server.");
         console.error(err);
     }
 }
 
-// ---------------- Send Answer ----------------
+// Send answer (bulletproof)
 async function sendAnswer(answer) {
     if (isSending) return;
     isSending = true;
@@ -63,13 +69,23 @@ async function sendAnswer(answer) {
             body: JSON.stringify({ answer })
         });
         const data = await res.json();
+        console.log("answer response:", data);
 
         if (data.done) {
-            addMessage("agent", "All questions completed! Thank you.", true);
-        } else {
+            addMessage("agent", data.message || "All questions completed! Thank you.", true);
+        } else if (data.question) {
             addMessage("agent", data.question);
             input.disabled = false;
             input.focus();
+        } else if (data.message) {
+            // fallback where server provided only a message
+            addMessage("agent", data.message);
+            input.disabled = false;
+            input.focus();
+        } else {
+            addMessage("agent", "⚠️ Unexpected response from server.");
+            console.warn("Unexpected server response:", data);
+            input.disabled = false;
         }
 
     } catch (err) {
@@ -80,6 +96,7 @@ async function sendAnswer(answer) {
         isSending = false;
     }
 }
+
 
 // ---------------- Input Handling ----------------
 input.addEventListener("keypress", (e) => {
