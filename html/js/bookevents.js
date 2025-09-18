@@ -40,26 +40,14 @@ async function loadQuestion() {
             credentials: "include",
         });
         const data = await res.json();
-
-        if (data.done) {
-            addMessage("agent", data.message || "All questions completed!", true);
-            input.disabled = true;
-        } else if (data.question) {
-            addMessage("agent", data.question, true);
-            input.disabled = false;
-            input.focus();
-        } else {
-            addMessage("agent", "Next question missing.", true);
-            input.disabled = false;
-        }
-
+        addMessage("agent", data.question, true);
+        input.disabled = false;
+        input.focus();
     } catch (err) {
         addMessage("agent", "Error: Could not reach server.");
         console.error(err);
-        input.disabled = false;
     }
 }
-
 
 // ---------------- Send Answer ----------------
 async function sendAnswer(answer) {
