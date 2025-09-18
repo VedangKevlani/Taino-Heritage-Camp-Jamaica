@@ -131,63 +131,51 @@ def answer():
     data = request.get_json(force=True) or {}
     user_answer = (data.get("answer") or "").strip()
 
-    if user_answer == "":
+    if not user_answer:
         add_debug_log("Empty answer received")
         return jsonify({"error": "empty_answer", "message": "Please provide a valid answer."}), 400
 
-    # ensure session initialized
+    # Init session if missing
     if "step" not in session or "answers" not in session:
         session["step"] = 0
         session["answers"] = []
-        add_debug_log("Session auto-initialized on /answer")
 
-    step = int(session.get("step", 0))
+    step = session.get("step", 0)
     answers = session.get("answers", [])
 
-    # Append answer only if still within questions length
+    # Record answer
     if step < len(questions):
         answers.append(user_answer)
         session["answers"] = answers
         add_debug_log(f"Answer recorded for step {step}: {user_answer}")
-    else:
-        add_debug_log(f"Received answer but step {step} already >= questions length")
 
     # Advance step
     step += 1
     session["step"] = step
     session.modified = True
 
-    # Completed flow
-    # Completed flow
+    # Check if all questions answered
     if step >= len(questions):
-        add_debug_log("All questions answered; returning done")
-        pdf_file, success = send_ticket_confirmation(answers)
+        add_debug_log("All questions answered; generating ticket/email")
+        pdf_file, email_sent = send_ticket_confirmation(answers)
+        msg = "All done! Your ticket has been emailed." if email_sent else "All done! Ticket PDF generated but email not sent."
+        return jsonify({
+            "question": None,
+            "done": True,
+            "answers": answers,
+            "message": msg
+        })
 
-        # If PDF generation failed
-        if not pdf_file:
-            add_debug_log("PDF generation failed; aborting email send.")
-            return jsonify({
-                "message": "All done! But ticket generation failed on the server. Check backend logs.",
-                "done": True,
-                "answers": answers
-            })
-
-        # If the email wasn't sent (unverified sender or SendGrid error), do not return 500.
-        if not success:
-            add_debug_log("Ticket PDF generated but email not sent (sender unverified or SendGrid error).")
-            return jsonify({
-                "message": "All done! Ticket PDF generated, but email was NOT sent. Owner must verify sender in SendGrid or check server logs.",
-                "done": True,
-                "answers": answers
-            })
-
-    add_debug_log(f"Ticket successfully sent; PDF: {pdf_file}")
+    # Return next question
+    next_q = questions[step]
+    add_debug_log(f"Asking next question {step}: {next_q}")
     return jsonify({
-        "message": "All done! Your ticket has been emailed.",
-        "done": True,
+        "question": next_q,
+        "done": False,
+        "step": step,
         "answers": answers
     })
-
+    # Defensive: if step exceeds questions length (should not happen), mark done
 
     # Otherwise return next question (safe index)
     next_q = questions[step]
