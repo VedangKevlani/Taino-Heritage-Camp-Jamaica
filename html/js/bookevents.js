@@ -41,19 +41,23 @@ async function loadQuestion() {
             credentials: "include",
         });
         const data = await res.json();
-        console.log("ask response:", data);
-        if (data.done) {
-            addMessage("agent", data.message || data.question || "All done.", true);
-        } else {
-            addMessage("agent", data.question || "Unexpected server response", true);
+        console.log("First question response:", data);
+
+        if (data.question) {
+            addMessage("agent", data.question, true);
             input.disabled = false;
             input.focus();
+        } else if (data.message) {
+            addMessage("agent", data.message, true);
+        } else {
+            addMessage("agent", "⚠️ Unexpected response from server.", true);
         }
     } catch (err) {
         addMessage("agent", "Error: Could not reach server.");
         console.error(err);
     }
 }
+
 
 // Send answer (bulletproof)
 async function sendAnswer(answer) {
