@@ -47,6 +47,10 @@ ALLOWED_ORIGINS = {
     "http://localhost:5500"
 }
 
+if os.getenv("FLASK_ENV") == "development":
+    app.config["SESSION_COOKIE_SECURE"] = False
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
 # ---------------- Questions ----------------
 questions = [
     "Welcome guest! What is your full name?",
@@ -105,7 +109,7 @@ def reset_session():
 
 @app.route("/ask", methods=["GET"])
 def ask():
-    # init session keys if missing
+    # initialize session keys if missing
     if "step" not in session or "answers" not in session:
         session["step"] = 0
         session["answers"] = []
@@ -114,17 +118,27 @@ def ask():
     step = int(session.get("step", 0))
     answers = session.get("answers", [])
 
+    # if all questions answered
     if step >= len(questions):
         add_debug_log("Asked after completion")
-        return jsonify({"message": "All questions answered.", "done": True, "answers": answers})
+        return jsonify({
+            "question": None,
+            "done": True,
+            "step": step,
+            "answers": answers
+        })
 
-    add_debug_log(f"Asking question {step}: {questions[step]}")
+    # safely get the next question
+    next_question = questions[step] if step < len(questions) else None
+
+    add_debug_log(f"Asking question {step}: {next_question}")
     return jsonify({
-        "question": questions[step],
+        "question": next_question,
         "done": False,
         "step": step,
         "answers": answers
     })
+
 
 @app.route("/answer", methods=["POST"])
 def answer():
