@@ -161,15 +161,10 @@ def answer():
     if step >= len(questions):
         add_debug_log("All questions answered; returning done")
         pdf_file, success = send_ticket_confirmation(answers)
-
+    
         if not success:
-            add_debug_log("Ticket not sent yet (sender may be unverified). Proceeding anyway.")
-            return jsonify({
-                "message": "All done! Ticket PDF generated, but email not sent yet. Waiting for sender verification.",
-                "done": True,
-                "answers": answers
-            })
-
+            add_debug_log("Failed to send ticket to guest or host")
+            return jsonify({"error": "ticket_error", "message": "Ticket generation or email failed."}), 500
         
         add_debug_log(f"Ticket successfully sent; PDF: {pdf_file}")
         return jsonify({"message": "All done! Your ticket has been emailed.", "done": True, "answers": answers})
