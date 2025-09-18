@@ -99,7 +99,12 @@ btn.addEventListener("click", (e) => {
 });
 
 // ---------------- Initialize ----------------
-document.addEventListener("DOMContentLoaded", () => {
-    input.disabled = true; // disable until first question loads
+// On DOMContentLoaded
+document.addEventListener("DOMContentLoaded", async () => {
+    input.disabled = true;
+    await fetch("https://taino-heritage-camp-jamaica.onrender.com/reset", {
+        method: "POST",
+        credentials: "include",
+    }); // reset session for new guest
     loadQuestion();
 });
