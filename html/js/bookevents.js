@@ -65,9 +65,9 @@ async function sendAnswer(answer) {
         const data = await res.json();
 
         if (data.done) {
-            addMessage("agent", "All questions completed! Thank you.", true);
+            addMessage("agent", data.message || "All questions completed!", true);
         } else {
-            addMessage("agent", data.question);
+            addMessage("agent", data.question || "Next question missing.");
             input.disabled = false;
             input.focus();
         }
