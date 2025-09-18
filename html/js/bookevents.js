@@ -65,14 +65,11 @@ async function sendAnswer(answer) {
         const data = await res.json();
 
         if (data.done) {
-            // Use backend message instead of hardcoding
-            addMessage("agent", data.message || "All questions completed!", true);
-        } else if (data.question) {
+            addMessage("agent", "All questions completed! Thank you.", true);
+        } else {
             addMessage("agent", data.question);
             input.disabled = false;
             input.focus();
-        } else {
-            addMessage("agent", "Something went wrong — no question returned.");
         }
 
     } catch (err) {
@@ -83,7 +80,6 @@ async function sendAnswer(answer) {
         isSending = false;
     }
 }
-
 
 // ---------------- Input Handling ----------------
 input.addEventListener("keypress", (e) => {
